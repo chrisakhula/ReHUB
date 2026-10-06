@@ -4,7 +4,9 @@ import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../auth/AuthProvider";
+import { identityApi } from "../../api/identity";
 import { loginSchema } from "../../schemas/auth";
 import { FormField } from "../../components/FormField";
 import { ErrorNotice } from "../../components/Common";
@@ -12,6 +14,10 @@ import { ErrorNotice } from "../../components/Common";
 export function LoginPage() {
   const auth = useAuth();
   const [error, setError] = useState("");
+  const settings = useQuery({
+    queryKey: ["settings"],
+    queryFn: identityApi.settings,
+  });
   const {
     register,
     handleSubmit,
@@ -23,7 +29,13 @@ export function LoginPage() {
   return (
     <main className="login-layout">
       <section className="login-context">
-        <div className="brand-mark">ARS</div>
+        <div className="brand-mark">
+          {settings.data?.logo_url ? (
+            <img src={settings.data.logo_url} alt="Institution logo" />
+          ) : (
+            "ARS"
+          )}
+        </div>
         <h1>
           Rehabilitation
           <br />
