@@ -1,52 +1,55 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from typing import Optional
-import math
-from app.core.database import get_db
-from app.models.compliance import Licence, AuditRecord
-from app.schemas.compliance import LicenceCreate, LicenceResponse, AuditRecordCreate, AuditRecordResponse
+"""Compliance API routes."""
 
+import math
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
 from app.core.permissions import require_permission
+from app.models.compliance import ComplianceRegister, ComplianceInspection
+from app.schemas.compliance import (
+    ComplianceRegisterIn, ComplianceRegisterOut,
+    ComplianceInspectionIn, ComplianceInspectionOut,
+)
+from app.services.compliance import ComplianceService
+
 
 router = APIRouter(
     prefix="/compliance",
     tags=["Compliance"],
-    dependencies=[Depends(require_permission("system.view"))]
+    dependencies=[Depends(require_permission("compliance.view"))]
 )
-@router.get("/licences")
-def get_licences(page: int = 1, db: Session = Depends(get_db)):
-    query = db.query(Licence)
+
+@router.get("/registers")
+def get_registers(page: int = 1, db: Session = Depends(get_db), actor=Depends(require_permission("compliance.view"))):
+    query = db.query(ComplianceRegister).filter(ComplianceRegister.facility_id == actor.facility_id)
     total = query.count()
     limit = 20
-    items = query.order_by(Licence.expiry_date.asc()).offset((page - 1) * limit).limit(limit).all()
+    items = query.order_by(ComplianceRegister.expiry_date.asc()).offset((page - 1) * limit).limit(limit).all()
+    
     return {
-        "items": [LicenceResponse.model_validate(i).model_dump() for i in items],
-        "meta": {"total": total, "page": page, "pages": math.ceil(total / limit)}
+        "items": [{"id": str(i.id), "category": i.category, "authority": i.authority, "reference_number": i.reference_number, "expiry_date": i.expiry_date.isoformat() if i.expiry_date else None, "status": i.status} for i in items],
+        "meta": {"total": total, "page": page, "pages": math.ceil(total / limit) if limit else 1}
     }
 
-@router.post("/licences")
-def create_licence(item: LicenceCreate, db: Session = Depends(get_db)):
-    db_item = Licence(**item.model_dump())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return LicenceResponse.model_validate(db_item).model_dump()
+@router.post("/registers", response_model=ComplianceRegisterOut)
+def create_register(request: Request, register: ComplianceRegisterIn, db: Session = Depends(get_db), actor=Depends(require_permission("compliance.edit"))):
+    service = ComplianceService(db, request, actor)
+    return service.create_register(register)
 
-@router.get("/audits")
-def get_audits(page: int = 1, db: Session = Depends(get_db)):
-    query = db.query(AuditRecord)
+@router.get("/inspections")
+def get_inspections(page: int = 1, db: Session = Depends(get_db), actor=Depends(require_permission("compliance.view"))):
+    query = db.query(ComplianceInspection).filter(ComplianceInspection.facility_id == actor.facility_id)
     total = query.count()
     limit = 20
-    items = query.order_by(AuditRecord.audit_date.desc()).offset((page - 1) * limit).limit(limit).all()
+    items = query.order_by(ComplianceInspection.inspection_date.desc()).offset((page - 1) * limit).limit(limit).all()
+    
     return {
-        "items": [AuditRecordResponse.model_validate(i).model_dump() for i in items],
-        "meta": {"total": total, "page": page, "pages": math.ceil(total / limit)}
+        "items": [{"id": str(i.id), "title": i.title, "inspection_date": i.inspection_date.isoformat() if i.inspection_date else None, "inspector_name": i.inspector_name, "passed": i.passed, "status": i.status} for i in items],
+        "meta": {"total": total, "page": page, "pages": math.ceil(total / limit) if limit else 1}
     }
 
-@router.post("/audits")
-def create_audit(item: AuditRecordCreate, db: Session = Depends(get_db)):
-    db_item = AuditRecord(**item.model_dump())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return AuditRecordResponse.model_validate(db_item).model_dump()
+@router.post("/inspections", response_model=ComplianceInspectionOut)
+def record_inspection(request: Request, inspection: ComplianceInspectionIn, db: Session = Depends(get_db), actor=Depends(require_permission("compliance.edit"))):
+    service = ComplianceService(db, request, actor)
+    return service.record_inspection(inspection)

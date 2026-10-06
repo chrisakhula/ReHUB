@@ -168,15 +168,15 @@ Specification sections 38–41 and 6.
 
 Specification sections 45 and 47–49.
 
-- [ ] Implement stores items, categories, units, suppliers, stock/reorder levels, batches and expiry tracking.
-- [ ] Implement purchase request, approval, purchase order, goods receipt and issue workflows with enforced transitions.
-- [ ] Implement stock issues/returns, adjustments, counts and variance reconciliation with attributable history.
-- [ ] Implement staff profiles, employee numbers, departments/designations, qualifications, professional bodies/licences, employment state and contact details.
-- [ ] Implement professional credential-expiry alerts.
-- [ ] Implement departments, shifts, rosters, leave, availability and coverage with daily staff views.
-- [ ] Implement compliance registers for the specified NACADA, facility/county, fire/public-health, pharmacy, ODPC, professional, insurance, policy and inspection records.
-- [ ] Capture compliance references, authorities, dates, attachments, responsible people and valid status transitions.
-- [ ] Generate configurable compliance expiry alerts, including 90/60/30/14/7-day intervals.
+- [x] Implement stores items, categories, units, suppliers, stock/reorder levels, batches and expiry tracking.
+- [x] Implement purchase request, approval, purchase order, goods receipt and issue workflows with enforced transitions.
+- [x] Implement stock issues/returns, adjustments, counts and variance reconciliation with attributable history.
+- [x] Implement staff profiles, employee numbers, departments/designations, qualifications, professional bodies/licences, employment state and contact details.
+- [x] Implement professional credential-expiry alerts.
+- [x] Implement departments, shifts, rosters, leave, availability and coverage with daily staff views.
+- [x] Implement compliance registers for the specified NACADA, facility/county, fire/public-health, pharmacy, ODPC, professional, insurance, policy and inspection records.
+- [x] Capture compliance references, authorities, dates, attachments, responsible people and valid status transitions.
+- [x] Generate configurable compliance expiry alerts, including 90/60/30/14/7-day intervals.
 
 ## Planned Phase 10: Reporting, outcomes and quality
 

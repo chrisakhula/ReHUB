@@ -1,37 +1,66 @@
-from datetime import date, datetime
-from typing import List, Optional
-import uuid
+"""Inventory and stores models."""
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-import enum
+from datetime import datetime
+from uuid import UUID
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.models.identity import Record
 
-class StoreItem(Base):
-    __tablename__ = "store_items"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    category: Mapped[str] = mapped_column(String(100), nullable=False)
-    unit: Mapped[str] = mapped_column(String(50), nullable=False)
-    stock_level: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+
+class Supplier(Record, Base):
+    __tablename__ = "inventory_suppliers"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), unique=True)
+    contact_person: Mapped[str] = mapped_column(String(100), default="")
+    phone: Mapped[str] = mapped_column(String(50), default="")
+    email: Mapped[str] = mapped_column(String(100), default="")
+    address: Mapped[str] = mapped_column(Text, default="")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class StoreItem(Record, Base):
+    __tablename__ = "inventory_store_items"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    code: Mapped[str] = mapped_column(String(50), unique=True)
+    name: Mapped[str] = mapped_column(String(200))
+    category: Mapped[str] = mapped_column(String(100)) # e.g. MEDICAL, FOOD, CLEANING, OFFICE
+    unit_of_measure: Mapped[str] = mapped_column(String(50)) # e.g. BOX, PIECE, LITER, KG
+    
+    current_stock: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
     reorder_level: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-class ComplianceRegister(Base):
-    __tablename__ = "compliance_registers"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    authority: Mapped[str] = mapped_column(String(100), nullable=False) # e.g. NACADA, Pharmacy
-    reference_number: Mapped[str] = mapped_column(String(100), nullable=True)
-    issue_date: Mapped[date] = mapped_column(Date, nullable=False)
-    expiry_date: Mapped[date] = mapped_column(Date, nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="active")
 
-class StaffProfile(Base):
-    __tablename__ = "staff_profiles"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    employee_number: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    designation: Mapped[str] = mapped_column(String(100), nullable=False)
-    professional_body: Mapped[str] = mapped_column(String(100), nullable=True)
-    licence_expiry: Mapped[date] = mapped_column(Date, nullable=True)
+class PurchaseOrder(Record, Base):
+    __tablename__ = "inventory_purchase_orders"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    supplier_id: Mapped[UUID] = mapped_column(ForeignKey("inventory_suppliers.id"))
+    order_number: Mapped[str] = mapped_column(String(100), unique=True)
+    order_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    status: Mapped[str] = mapped_column(String(50), default="DRAFT") # DRAFT, APPROVED, ORDERED, RECEIVED, CANCELLED
+    total_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
+    requested_by_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    approved_by_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+
+class StockTransaction(Record, Base):
+    __tablename__ = "inventory_stock_transactions"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    item_id: Mapped[UUID] = mapped_column(ForeignKey("inventory_store_items.id"))
+    transaction_type: Mapped[str] = mapped_column(String(50)) # RECEIPT, ISSUE, ADJUSTMENT, RETURN
+    quantity: Mapped[float] = mapped_column(Numeric(10, 2))
+    batch_number: Mapped[str] = mapped_column(String(100), default="")
+    expiry_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reference: Mapped[str] = mapped_column(String(200), default="") # PO number, Request ID
+    performed_by_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    notes: Mapped[str] = mapped_column(Text, default="")

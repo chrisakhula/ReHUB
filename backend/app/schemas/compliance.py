@@ -1,33 +1,49 @@
-from datetime import datetime
+"""Compliance schemas."""
+
+from datetime import datetime, date
 from typing import Optional
-import uuid
-from pydantic import BaseModel, ConfigDict
+from uuid import UUID
 
-class LicenceBase(BaseModel):
-    name: str
-    authority: str
-    issue_date: Optional[datetime] = None
-    expiry_date: Optional[datetime] = None
-    status: str = "active"
-    reference_number: Optional[str] = None
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class RecordBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-class LicenceCreate(LicenceBase):
-    pass
 
-class LicenceResponse(LicenceBase):
-    id: uuid.UUID
+class ComplianceRegisterIn(RecordBase):
+    category: str = Field(..., max_length=100)
+    authority: str = Field(..., max_length=200)
+    reference_number: str = Field("", max_length=100)
+    issue_date: date | None = None
+    expiry_date: date | None = None
+    status: str = Field("ACTIVE", max_length=50)
+    responsible_person_id: UUID | None = None
+    attachments_url: str = Field("", max_length=1000)
+    notes: str = Field("", max_length=2000)
 
-class AuditRecordBase(BaseModel):
-    title: str
-    audit_date: Optional[datetime] = None
-    auditor: str
-    findings: Optional[str] = None
+
+class ComplianceRegisterOut(ComplianceRegisterIn):
+    id: UUID
+    facility_id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class ComplianceInspectionIn(RecordBase):
+    register_id: UUID | None = None
+    title: str = Field(..., max_length=200)
+    inspection_date: datetime
+    inspector_name: str = Field(..., max_length=200)
+    authority: str = Field(..., max_length=200)
+    findings: str = Field("", max_length=2000)
+    corrective_actions: str = Field("", max_length=2000)
     passed: bool = True
-    model_config = ConfigDict(from_attributes=True)
+    status: str = Field("COMPLETED", max_length=50)
 
-class AuditRecordCreate(AuditRecordBase):
-    pass
 
-class AuditRecordResponse(AuditRecordBase):
-    id: uuid.UUID
+class ComplianceInspectionOut(ComplianceInspectionIn):
+    id: UUID
+    facility_id: UUID
+    created_at: datetime
+    updated_at: datetime

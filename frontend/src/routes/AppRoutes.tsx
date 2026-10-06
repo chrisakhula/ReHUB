@@ -85,6 +85,7 @@ const InventoryPage = lazy(() => import("../modules/inventory/InventoryPage").th
 const DischargePage = lazy(() => import("../modules/discharge/DischargePage").then((m) => ({ default: m.DischargePage })));
 const ReportingPage = lazy(() => import("../modules/reporting/ReportingPage").then((m) => ({ default: m.ReportingPage })));
 const CompliancePage = lazy(() => import("../modules/compliance/CompliancePage").then((m) => ({ default: m.CompliancePage })));
+const StaffPage = lazy(() => import("../modules/staff/StaffPage").then((m) => ({ default: m.StaffPage })));
 function AuthGuard() {
   const auth = useAuth();
   if (auth.loading) return <Loading />;
@@ -191,6 +192,7 @@ export function AppRoutes() {
               <Route element={<PermissionGuard permission="discharge.view" />}><Route path="/discharge/*" element={<DischargePage />} /></Route>
               <Route element={<PermissionGuard permission="reporting.view" />}><Route path="/reporting/*" element={<ReportingPage />} /></Route>
               <Route element={<PermissionGuard permission="compliance.view" />}><Route path="/compliance/*" element={<CompliancePage />} /></Route>
+              <Route element={<PermissionGuard permission="staff.view" />}><Route path="/staff/*" element={<StaffPage />} /></Route>
 
               <Route element={<PermissionGuard permission="users.manage" />}>
                 <Route path="/administration/users" element={<UsersPage />} />

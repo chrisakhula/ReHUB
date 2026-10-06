@@ -1,27 +1,51 @@
-import uuid
-from datetime import datetime
-from typing import Optional
-from sqlalchemy import String, Text, DateTime, Boolean, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+"""Compliance models."""
+
+from datetime import datetime, date
+from uuid import UUID
+
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+from app.models.identity import Record
 
-class Licence(Base):
-    __tablename__ = "licences"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    authority: Mapped[str] = mapped_column(String(255), nullable=False) # e.g. NACADA
-    issue_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    expiry_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    status: Mapped[str] = mapped_column(String(50), default="active") # active, expired, renewed
-    reference_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-class AuditRecord(Base):
-    __tablename__ = "compliance_audits"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    audit_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    auditor: Mapped[str] = mapped_column(String(255), nullable=False)
-    findings: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+class ComplianceRegister(Record, Base):
+    __tablename__ = "compliance_registers"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    
+    category: Mapped[str] = mapped_column(String(100)) # NACADA, FACILITY, FIRE, PHARMACY, ODPC, PROFESSIONAL, INSURANCE
+    authority: Mapped[str] = mapped_column(String(200))
+    reference_number: Mapped[str] = mapped_column(String(100), default="")
+    
+    issue_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    
+    status: Mapped[str] = mapped_column(String(50), default="ACTIVE") # ACTIVE, EXPIRED, IN_RENEWAL, SUSPENDED
+    responsible_person_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    attachments_url: Mapped[str] = mapped_column(Text, default="")
+    notes: Mapped[str] = mapped_column(Text, default="")
+
+
+class ComplianceInspection(Record, Base):
+    __tablename__ = "compliance_inspections"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    register_id: Mapped[UUID | None] = mapped_column(ForeignKey("compliance_registers.id"), nullable=True)
+    
+    title: Mapped[str] = mapped_column(String(200))
+    inspection_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    inspector_name: Mapped[str] = mapped_column(String(200))
+    authority: Mapped[str] = mapped_column(String(200))
+    
+    findings: Mapped[str] = mapped_column(Text, default="")
+    corrective_actions: Mapped[str] = mapped_column(Text, default="")
     passed: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    status: Mapped[str] = mapped_column(String(50), default="COMPLETED") # SCHEDULED, COMPLETED, FOLLOW_UP_REQUIRED

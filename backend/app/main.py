@@ -21,6 +21,7 @@ from app.api.v1.discharge.routes import router as discharge_router
 from app.api.v1.inventory.routes import router as inventory_router
 from app.api.v1.reporting.routes import router as reporting_router
 from app.api.v1.compliance.routes import router as compliance_router
+from app.api.v1.staff.routes import router as staff_router
 from app.core.config import get_settings
 from app.core.database import engine
 from app.core.logging import configure_logging
@@ -55,6 +56,7 @@ for router in [
     inventory_router,
     reporting_router,
     compliance_router,
+    staff_router,
 ]:
     app.include_router(router, prefix="/api/v1")
 
