@@ -5,8 +5,7 @@ import { Button, Offcanvas } from "react-bootstrap";
 import { useAuth } from "../auth/AuthProvider";
 import { identityApi } from "../api/identity";
 import { ErrorNotice } from "../components/Common";
-
-
+import { CrisisHelpButton } from "../components/CrisisHelpModal";
 
 
 const navGroups = [
@@ -147,6 +146,9 @@ export function AppLayout() {
             <span className="institution-name">
               {settings.data?.name ?? "ARS Rehabilitation Institution"}
             </span>
+            <div className="ms-3">
+              <CrisisHelpButton />
+            </div>
           </div>
           <div className="topbar-user">
             <div>

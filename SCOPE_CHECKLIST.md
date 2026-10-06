@@ -51,6 +51,14 @@ Specification sections 1–9, 53, 58, 61–72 and 74.
 
 **Phase gate:** Phase 1 is structurally testable. The user authorised proceeding concurrently with Phases 2-5. Outstanding SMTP/container/manual acceptance work remains visible; it does not imply those checks have passed.
 
+## Phase 1.5: Minimum Clinical Safety (Urgent Additions)
+
+Specification: Implement clinical safety guardrails before onboarding real patients.
+
+- [ ] **Validated Suicide Screening**: Integrate at least one validated suicide risk screening tool (e.g., C-SSRS).
+- [ ] **Real-time Crisis Alerts**: Implement a basic crisis alert system that flags high-risk keywords in text and notifies a clinician.
+- [ ] **Emergency Resources**: Build a prominent, always-accessible "Get Help Now" button that displays crisis hotlines and local emergency resources.
+
 ## Phase 2: Client registry and admissions
 
 Specification sections 6, 10–14 and 31.

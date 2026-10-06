@@ -54,6 +54,12 @@ class RehabilitationService:
         audit(self.db, self.request, f"{entity}.accessed", entity, self.actor, record_id)
 
     def save(self, model, values):
+        # Scan for crisis keywords in any text fields
+        from app.services.crisis import scan_text_for_crisis
+        for key, val in values.items():
+            if isinstance(val, str):
+                scan_text_for_crisis(val)
+                
         row = model(
             **values,
             facility_id=self.actor.facility_id,
