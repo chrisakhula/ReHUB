@@ -58,6 +58,19 @@ export function AppLayout() {
   const auth = useAuth();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+  
+  useEffect(() => {
+    document.documentElement.setAttribute("data-bs-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  
+  const toggleTheme = () => {
+    setTheme(prev => prev === "light" ? "dark" : "light");
+  };
+
   const settings = useQuery({
     queryKey: ["settings"],
     queryFn: identityApi.settings,
@@ -148,7 +161,10 @@ export function AppLayout() {
             <span className="institution-name">
               {settings.data?.name ?? "ARS Rehabilitation Institution"}
             </span>
-            <div className="ms-3">
+            <div className="ms-3 d-flex align-items-center gap-2">
+              <Button variant="outline-secondary" size="sm" onClick={toggleTheme} aria-label="Toggle theme">
+                <i className={`bi bi-${theme === 'dark' ? 'sun' : 'moon'}`} />
+              </Button>
               <CrisisHelpButton />
             </div>
           </div>

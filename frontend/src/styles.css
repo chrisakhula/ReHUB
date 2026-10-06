@@ -10,6 +10,67 @@
   --bs-body-color: var(--ink);
   --bs-body-bg: var(--surface);
 }
+
+[data-bs-theme="dark"] {
+  --navy: #0b141e;
+  --navy-light: #132433;
+  --ink: #e2e8f0;
+  --muted: #8b9eb0;
+  --line: #2d3f50;
+  --surface: #132433;
+  --bs-primary: #3b82f6;
+  --bs-body-color: var(--ink);
+  --bs-body-bg: #0b141e;
+  
+  /* Additional overrides for dark mode */
+  --bs-card-bg: #1a2a38;
+  --bs-card-border-color: var(--line);
+  --bs-card-cap-bg: #132433;
+}
+
+[data-bs-theme="dark"] .card {
+  background: var(--bs-card-bg);
+}
+[data-bs-theme="dark"] .card-header {
+  background: var(--bs-card-cap-bg);
+}
+[data-bs-theme="dark"] .topbar {
+  background: var(--bs-card-bg);
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: var(--bs-card-bg);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+[data-bs-theme="dark"] .table {
+  --bs-table-bg: var(--bs-card-bg);
+  --bs-table-color: var(--ink);
+  --bs-table-striped-color: var(--ink);
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+}
+[data-bs-theme="dark"] .table thead th {
+  background: var(--bs-card-cap-bg);
+  color: var(--muted);
+}
+[data-bs-theme="dark"] .workspace-link:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+[data-bs-theme="dark"] .login-form-panel {
+  background: var(--bs-body-bg);
+}
+[data-bs-theme="dark"] .auth-single {
+  background: var(--bs-card-bg);
+}
+[data-bs-theme="dark"] .nested-fields {
+  background: var(--surface);
+}
 body {
   font-family: "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
