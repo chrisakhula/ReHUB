@@ -16,3 +16,6 @@ storage/
 *.db
 *.sqlite
 *.sqlite3
+
+.env*
+*.env
