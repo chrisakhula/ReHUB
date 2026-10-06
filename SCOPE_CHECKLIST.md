@@ -126,14 +126,14 @@ Specification sections 26–28.
 
 Specification sections 42–44.
 
-- [ ] Create separate Payer and Client entities with many-to-many sponsorship relationships.
-- [ ] Implement services, programme packages and price lists.
-- [ ] Implement invoices/items with server-calculated totals and valid invoice states.
-- [ ] Implement payments, receipts, payment allocation, outstanding balances, statements and debt ageing.
-- [ ] Support discounts, credits, refunds, write-offs and adjustments with reasons, permissions and preserved financial history.
-- [ ] Seed the specified payment methods and payer/sponsor categories; keep finance access separate from clinical access.
-- [ ] Prepare M-Pesa transaction/reference, phone, amount, timestamp, payer/invoice and reconciliation structures without hard-coded confirmation.
-- [ ] Audit financial creation, adjustments, status changes, sensitive access and exports.
+- [x] Create separate Payer and Client entities with many-to-many sponsorship relationships.
+- [x] Implement services, programme packages and price lists.
+- [x] Implement invoices/items with server-calculated totals and valid invoice states.
+- [x] Implement payments, receipts, payment allocation, outstanding balances, statements and debt ageing.
+- [x] Support discounts, credits, refunds, write-offs and adjustments with reasons, permissions and preserved financial history.
+- [x] Seed the specified payment methods and payer/sponsor categories; keep finance access separate from clinical access.
+- [x] Prepare M-Pesa transaction/reference, phone, amount, timestamp, payer/invoice and reconciliation structures without hard-coded confirmation.
+- [x] Audit financial creation, adjustments, status changes, sensitive access and exports.
 
 Actual M-Pesa provider integration is a future integration, beyond the required preparation of billing structures.
 
