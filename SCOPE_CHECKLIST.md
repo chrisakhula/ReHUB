@@ -182,17 +182,17 @@ Specification sections 45 and 47–49.
 
 Specification sections 52–53 and 78.
 
-- [ ] Implement role-specific management, counsellor, nursing and finance dashboards using live operational data.
-- [ ] Provide management visibility into residents, beds/occupancy, admissions/discharges, expected discharges, high risks, attendance, incidents, debt, expiry and overdue reviews.
-- [ ] Implement clinical reports for active clients, diagnoses, risks, medication, referrals and outcomes.
-- [ ] Implement rehabilitation reports for admissions, substance trends, therapy/programme attendance, plan completion, discharge and relapse.
-- [ ] Implement aftercare reports for follow-up completion, abstinence, relapse, readmission, employment and reintegration.
-- [ ] Implement financial reports for revenue, invoices, payments, outstanding debt, ageing, payment methods and sponsors.
-- [ ] Implement residential reports for occupancy, length of stay, movements, admissions and discharge.
-- [ ] Implement compliance/quality reports for licences, incidents, complaints, audits and corrective actions.
-- [ ] Provide the specified date, demographic, programme, substance, status, discharge and responsible-professional filters.
-- [ ] Support permission-controlled CSV exports and PDF export architecture; audit exports and use anonymised reporting where appropriate.
-- [ ] Verify that the final system can answer every management/clinical/recovery question in specification section 78.
+- [x] Implement role-specific management, counsellor, nursing and finance dashboards using live operational data.
+- [x] Provide management visibility into residents, beds/occupancy, admissions/discharges, expected discharges, high risks, attendance, incidents, debt, expiry and overdue reviews.
+- [x] Implement clinical reports for active clients, diagnoses, risks, medication, referrals and outcomes.
+- [x] Implement rehabilitation reports for admissions, substance trends, therapy/programme attendance, plan completion, discharge and relapse.
+- [x] Implement aftercare reports for follow-up completion, abstinence, relapse, readmission, employment and reintegration.
+- [x] Implement financial reports for revenue, invoices, payments, outstanding debt, ageing, payment methods and sponsors.
+- [x] Implement residential reports for occupancy, length of stay, movements, admissions and discharge.
+- [x] Implement compliance/quality reports for licences, incidents, complaints, audits and corrective actions.
+- [x] Provide the specified date, demographic, programme, substance, status, discharge and responsible-professional filters.
+- [x] Support permission-controlled CSV exports and PDF export architecture; audit exports and use anonymised reporting where appropriate.
+- [x] Verify that the final system can answer every management/clinical/recovery question in specification section 78.
 
 ## Shared scope: deliver alongside the relevant phase
 

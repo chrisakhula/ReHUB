@@ -1,10 +1,41 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import "./DashboardPage.css";
+import { api } from "../../api/client";
+
+interface DashboardMetrics {
+  active_clients: number;
+  current_occupancy: number;
+  pending_discharges: number;
+  open_incidents: number;
+  outstanding_invoices: number;
+  total_staff_on_shift: number;
+}
 
 export function DashboardPage() {
   const auth = useAuth();
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const res = await api.get<DashboardMetrics>("/api/v1/reporting/dashboard");
+        setMetrics(res.data);
+      } catch (err) {
+        console.error("Failed to load dashboard metrics", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (auth.can("system.view")) {
+        fetchMetrics();
+    } else {
+        setLoading(false); // Can't fetch metrics without permission
+    }
+  }, [auth]);
+
   // Format date to e.g., "Tuesday, 6 October 2026"
   const currentDate = new Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
@@ -137,15 +168,44 @@ export function DashboardPage() {
         <div className="dashboard-side-col">
           <div className="dash-card mb-4 risk-register-card">
             <div className="dash-card-header d-flex justify-content-between align-items-center">
-              <h2><i className="bi bi-file-earmark-text me-2 text-primary"></i> Risk register</h2>
-              <Link to="/assessments" className="dash-link">Open risk register <i className="bi bi-arrow-right"></i></Link>
+              <h2><i className="bi bi-graph-up me-2 text-primary"></i> Live Metrics</h2>
+              {auth.can("reporting.view") && <Link to="/reporting" className="dash-link">View reports <i className="bi bi-arrow-right"></i></Link>}
             </div>
-            <div className="risk-empty-state">
-              <div className="shield-circle">
-                <i className="bi bi-shield"></i>
-              </div>
-              <h3 className="mt-3">No records in your permitted scope</h3>
-              <p className="text-secondary small mt-1">This view only includes records you are<br/>authorised to see.</p>
+            <div className="p-3">
+              {loading ? (
+                <div className="text-center text-muted"><div className="spinner-border spinner-border-sm" /> Loading metrics...</div>
+              ) : metrics ? (
+                <table className="access-table w-100 mb-0">
+                  <tbody>
+                    <tr>
+                      <td className="text-secondary py-2 border-bottom">Active Clients:</td>
+                      <td className="text-end fw-bold py-2 border-bottom">{metrics.active_clients}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-secondary py-2 border-bottom">Current Occupancy:</td>
+                      <td className="text-end fw-bold py-2 border-bottom">{metrics.current_occupancy}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-secondary py-2 border-bottom">Pending Discharges:</td>
+                      <td className="text-end fw-bold py-2 border-bottom">{metrics.pending_discharges}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-secondary py-2 border-bottom">Open Incidents:</td>
+                      <td className="text-end fw-bold py-2 border-bottom text-danger">{metrics.open_incidents}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-secondary py-2 border-bottom">Outstanding Invoices:</td>
+                      <td className="text-end fw-bold py-2 border-bottom">{new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(metrics.outstanding_invoices)}</td>
+                    </tr>
+                    <tr>
+                      <td className="text-secondary py-2">Staff on Shift Today:</td>
+                      <td className="text-end fw-bold py-2">{metrics.total_staff_on_shift}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center text-muted py-4">Metrics unavailable or access restricted.</div>
+              )}
             </div>
           </div>
 
