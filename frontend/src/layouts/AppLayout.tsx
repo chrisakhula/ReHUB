@@ -38,7 +38,9 @@ const navGroups = [
       { to: "/billing/invoices", name: "Billing & Finance", icon: "receipt", permission: "billing.view" },
       { to: "/discharge/plans", name: "Discharge & Aftercare", icon: "box-arrow-right", permission: "discharge.view" },
       { to: "/inventory/items", name: "Inventory", icon: "boxes", permission: "inventory.view" },
+      { to: "/staff/profiles", name: "Staff & HR", icon: "person-badge", permission: "staff.view" },
       { to: "/compliance/licences", name: "Compliance & Quality", icon: "shield-check", permission: "compliance.view" },
+      { to: "/reporting", name: "Reporting & Analytics", icon: "bar-chart-line", permission: "reporting.view" },
     ]
   },
   {
