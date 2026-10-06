@@ -141,14 +141,14 @@ Actual M-Pesa provider integration is a future integration, beyond the required 
 
 Specification sections 32–37 and 46.
 
-- [ ] Track resident movements, leave, hospitalisation, transfers, AWOL and return status; preserve location/movement history.
-- [ ] Track expected return and overdue leave; connect movements to admission and bed availability rules.
-- [ ] Implement approved visitors, relationships, booking, permission status, check-in/out, items brought in, staff authorisation and visit incidents.
-- [ ] Implement incident categories, reporting, severity, assignment, investigation, actions and valid closure/status workflows; correct submitted records through addenda rather than destructive edits.
-- [ ] Implement explicitly permission-restricted safeguarding records for vulnerable adults, minors and all specified abuse/neglect/exploitation concerns, with escalation and follow-up.
-- [ ] Implement complaints/grievances, investigation, resolution and corrective action tracking.
-- [ ] Implement meal plans, special/medical diets, allergy requirements, resident headcounts and kitchen requirements.
-- [ ] Connect residential incidents and risks to appropriate staff dashboards, tasks and notifications without exposing confidential content.
+- [x] Track resident movements, leave, hospitalisation, transfers, AWOL and return status; preserve location/movement history.
+- [x] Track expected return and overdue leave; connect movements to admission and bed availability rules.
+- [x] Implement approved visitors, relationships, booking, permission status, check-in/out, items brought in, staff authorisation and visit incidents.
+- [x] Implement incident categories, reporting, severity, assignment, investigation, actions and valid closure/status workflows; correct submitted records through addenda rather than destructive edits.
+- [x] Implement explicitly permission-restricted safeguarding records for vulnerable adults, minors and all specified abuse/neglect/exploitation concerns, with escalation and follow-up.
+- [x] Implement complaints/grievances, investigation, resolution and corrective action tracking.
+- [x] Implement meal plans, special/medical diets, allergy requirements, resident headcounts and kitchen requirements.
+- [x] Connect residential incidents and risks to appropriate staff dashboards, tasks and notifications without exposing confidential content.
 
 ## Planned Phase 8: Discharge and recovery
 
