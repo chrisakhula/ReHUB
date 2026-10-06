@@ -154,15 +154,15 @@ Specification sections 32–37 and 46.
 
 Specification sections 38–41 and 6.
 
-- [ ] Implement discharge plans and mandatory readiness checks covering achieved goals, unresolved risks, medication, relapse prevention, accommodation, family support, work/education, support groups, appointments, referrals, emergency plans and summary documentation.
-- [ ] Implement valid discharge approval/status transitions, discharge types, summaries, responsible staff and attributable dates.
-- [ ] Complete medication instructions, referrals, belongings return, bed release and care continuity as part of discharge transactions.
-- [ ] Preserve discharge records and revisions; audit discharge actions.
-- [ ] Create aftercare cases, assigned staff, contacts and recovery-monitoring records; configure follow-up intervals such as 7/30/90/180/365 days.
-- [ ] Track successful/unsuccessful contact, abstinence, lapse/relapse, support participation, employment/education, housing, family relations, medication adherence, wellbeing and referrals.
-- [ ] Record relapse substance, date, triggers, circumstances, severity, consequences, protective factors, intervention and clinical review.
-- [ ] Revise treatment/aftercare when relapse occurs; do not automatically close aftercare.
-- [ ] Support readmission decisions and new admissions/episodes linked to the same permanent client record.
+- [x] Implement discharge plans and mandatory readiness checks covering achieved goals, unresolved risks, medication, relapse prevention, accommodation, family support, work/education, support groups, appointments, referrals, emergency plans and summary documentation.
+- [x] Implement valid discharge approval/status transitions, discharge types, summaries, responsible staff and attributable dates.
+- [x] Complete medication instructions, referrals, belongings return, bed release and care continuity as part of discharge transactions.
+- [x] Preserve discharge records and revisions; audit discharge actions.
+- [x] Create aftercare cases, assigned staff, contacts and recovery-monitoring records; configure follow-up intervals such as 7/30/90/180/365 days.
+- [x] Track successful/unsuccessful contact, abstinence, lapse/relapse, support participation, employment/education, housing, family relations, medication adherence, wellbeing and referrals.
+- [x] Record relapse substance, date, triggers, circumstances, severity, consequences, protective factors, intervention and clinical review.
+- [x] Revise treatment/aftercare when relapse occurs; do not automatically close aftercare.
+- [x] Support readmission decisions and new admissions/episodes linked to the same permanent client record.
 
 ## Planned Phase 9: Inventory, staff and compliance
 
