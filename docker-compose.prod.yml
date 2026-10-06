@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:18-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ars}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-ars_rms}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
@@ -18,7 +18,7 @@ services:
     build: ./backend
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_OWNER_USER:-ars_owner}:${POSTGRES_OWNER_PASSWORD}@postgres:5432/${POSTGRES_DB:-ars_rms}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_OWNER_USER:?Set POSTGRES_OWNER_USER in .env}:${POSTGRES_OWNER_PASSWORD:?Set POSTGRES_OWNER_PASSWORD in .env}@postgres:5432/${POSTGRES_DB}
     command: ["alembic", "upgrade", "head"]
     depends_on:
       postgres:
@@ -28,7 +28,7 @@ services:
     build: ./backend
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ars}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ars_rms}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       ENVIRONMENT: production
     depends_on:
       migrate:

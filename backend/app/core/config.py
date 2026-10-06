@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
-    database_url: str = "postgresql+psycopg://ars:ars_dev@localhost:5432/ars_rms"
+    database_url: str
     secret_key: str = ""
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
