@@ -34,7 +34,8 @@ export function ReportingPage() {
     <div className="reporting-workspace p-4">
       <div className="mb-4">
         <h1 className="h3">Management Dashboard</h1>
-        <p className="text-secondary">Live operational metrics and facility overview.</p>
+        <p className="text-secondary fw-bold text-danger">⚠️ Reporting module under development</p>
+        <p className="text-muted small">Metrics below are scaffolded structures, not live operational data.</p>
       </div>
 
       <Row className="g-4 mb-4">

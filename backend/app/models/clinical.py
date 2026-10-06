@@ -202,3 +202,17 @@ class ToxicologyTest(CareRecord, Base):
     acknowledgement: Mapped[str] = mapped_column(String(30))
     acknowledgement_note: Mapped[str] = mapped_column(String(1000), default="")
     follow_up_action: Mapped[str] = mapped_column(Text)
+
+class CrisisAlert(Record, Base):
+    __tablename__ = "clinical_crisis_alerts"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    client_id: Mapped[UUID | None] = mapped_column(ForeignKey("clients.id"), index=True)
+    source_entity: Mapped[str] = mapped_column(String(50))
+    source_entity_id: Mapped[str] = mapped_column(String(50))
+    detected_keywords: Mapped[str] = mapped_column(String(500))
+    text_snippet: Mapped[str] = mapped_column(Text)
+    severity: Mapped[str] = mapped_column(String(30), default="CRITICAL")
+    status: Mapped[str] = mapped_column(String(30), default="NEW")
+    acknowledged_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+

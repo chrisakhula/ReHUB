@@ -3,16 +3,21 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.database import get_db
 
-router = APIRouter(prefix="/reporting", tags=["Reporting"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/reporting",
+    tags=["Reporting"],
+    dependencies=[Depends(require_permission("system.view"))]
+)
 @router.get("/dashboard")
 def get_dashboard_metrics(db: Session = Depends(get_db)):
     # In a real scenario, this would query various tables.
-    # For now, we return placeholder structure matching the requirements.
+    # For now, we return 0 as placeholder since it's under development.
     return {
-        "active_clients": 42,
-        "current_occupancy": 85,
-        "pending_discharges": 3,
-        "recent_incidents": 1,
-        "outstanding_invoices": 12
+        "active_clients": 0,
+        "current_occupancy": 0,
+        "pending_discharges": 0,
+        "recent_incidents": 0,
+        "outstanding_invoices": 0
     }

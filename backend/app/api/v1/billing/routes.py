@@ -7,8 +7,13 @@ from app.core.database import get_db
 from app.models.billing import Invoice
 from app.schemas.billing import InvoiceCreate, InvoiceResponse
 
-router = APIRouter(prefix="/billing", tags=["Billing"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/billing",
+    tags=["Billing"],
+    dependencies=[Depends(require_permission("billing.view"))]
+)
 @router.get("/invoices")
 def get_invoices(
     page: int = 1,

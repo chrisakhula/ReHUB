@@ -6,8 +6,13 @@ from app.core.database import get_db
 from app.models.inventory import InventoryItem
 from app.schemas.inventory import InventoryItemCreate, InventoryItemResponse
 
-router = APIRouter(prefix="/inventory", tags=["Inventory"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/inventory",
+    tags=["Inventory"],
+    dependencies=[Depends(require_permission("pharmacy.view"))]
+)
 @router.get("/items")
 def get_inventory_items(
     page: int = 1,

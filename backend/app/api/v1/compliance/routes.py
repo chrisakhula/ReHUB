@@ -6,8 +6,13 @@ from app.core.database import get_db
 from app.models.compliance import Licence, AuditRecord
 from app.schemas.compliance import LicenceCreate, LicenceResponse, AuditRecordCreate, AuditRecordResponse
 
-router = APIRouter(prefix="/compliance", tags=["Compliance"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/compliance",
+    tags=["Compliance"],
+    dependencies=[Depends(require_permission("system.view"))]
+)
 @router.get("/licences")
 def get_licences(page: int = 1, db: Session = Depends(get_db)):
     query = db.query(Licence)

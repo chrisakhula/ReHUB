@@ -1,7 +1,9 @@
 import re
 import logging
-from typing import List
-
+from typing import List, Optional
+from sqlalchemy.orm import Session
+from uuid import UUID
+from app.models.clinical import CrisisAlert
 logger = logging.getLogger("ars.crisis_scanner")
 
 CRISIS_KEYWORDS = [
@@ -10,7 +12,14 @@ CRISIS_KEYWORDS = [
     "overdose", "cut myself", "give up on life"
 ]
 
-def scan_text_for_crisis(text: str) -> List[str]:
+def scan_text_for_crisis(
+    text: str, 
+    db: Session = None, 
+    facility_id: UUID = None, 
+    client_id: Optional[UUID] = None, 
+    source_entity: str = "Unknown", 
+    source_entity_id: str = "Unknown"
+) -> List[str]:
     """
     Scans patient-entered text or clinical notes for high-risk crisis keywords.
     Returns a list of matched keywords/phrases.
@@ -29,7 +38,18 @@ def scan_text_for_crisis(text: str) -> List[str]:
             
     if matches:
         logger.warning(f"CRITICAL: Crisis keywords detected in text: {matches}")
-        # In a real implementation, this would trigger an email or SMS to the duty clinician
-        # notify_duty_clinician(matches, text)
-        
+        if db and facility_id:
+            alert = CrisisAlert(
+                facility_id=facility_id,
+                client_id=client_id,
+                source_entity=source_entity,
+                source_entity_id=source_entity_id,
+                detected_keywords=", ".join(matches),
+                text_snippet=text[:500],
+                severity="CRITICAL",
+                status="NEW"
+            )
+            db.add(alert)
+            # Will be flushed/committed by the calling service
+            
     return matches

@@ -126,14 +126,14 @@ Specification sections 26–28.
 
 Specification sections 42–44.
 
-- [x] Create separate Payer and Client entities with many-to-many sponsorship relationships.
-- [x] Implement services, programme packages and price lists.
-- [x] Implement invoices/items with server-calculated totals and valid invoice states.
-- [x] Implement payments, receipts, payment allocation, outstanding balances, statements and debt ageing.
-- [x] Support discounts, credits, refunds, write-offs and adjustments with reasons, permissions and preserved financial history.
-- [x] Seed the specified payment methods and payer/sponsor categories; keep finance access separate from clinical access.
-- [x] Prepare M-Pesa transaction/reference, phone, amount, timestamp, payer/invoice and reconciliation structures without hard-coded confirmation.
-- [x] Audit financial creation, adjustments, status changes, sensitive access and exports.
+- [ ] Create separate Payer and Client entities with many-to-many sponsorship relationships.
+- [ ] Implement services, programme packages and price lists.
+- [ ] Implement invoices/items with server-calculated totals and valid invoice states.
+- [ ] Implement payments, receipts, payment allocation, outstanding balances, statements and debt ageing.
+- [ ] Support discounts, credits, refunds, write-offs and adjustments with reasons, permissions and preserved financial history.
+- [ ] Seed the specified payment methods and payer/sponsor categories; keep finance access separate from clinical access.
+- [ ] Prepare M-Pesa transaction/reference, phone, amount, timestamp, payer/invoice and reconciliation structures without hard-coded confirmation.
+- [ ] Audit financial creation, adjustments, status changes, sensitive access and exports.
 
 Actual M-Pesa provider integration is a future integration, beyond the required preparation of billing structures.
 
@@ -141,58 +141,58 @@ Actual M-Pesa provider integration is a future integration, beyond the required 
 
 Specification sections 32–37 and 46.
 
-- [x] Track resident movements, leave, hospitalisation, transfers, AWOL and return status; preserve location/movement history.
-- [x] Track expected return and overdue leave; connect movements to admission and bed availability rules.
-- [x] Implement approved visitors, relationships, booking, permission status, check-in/out, items brought in, staff authorisation and visit incidents.
-- [x] Implement incident categories, reporting, severity, assignment, investigation, actions and valid closure/status workflows; correct submitted records through addenda rather than destructive edits.
-- [x] Implement explicitly permission-restricted safeguarding records for vulnerable adults, minors and all specified abuse/neglect/exploitation concerns, with escalation and follow-up.
-- [x] Implement complaints/grievances, investigation, resolution and corrective action tracking.
-- [x] Implement meal plans, special/medical diets, allergy requirements, resident headcounts and kitchen requirements.
-- [x] Connect residential incidents and risks to appropriate staff dashboards, tasks and notifications without exposing confidential content.
+- [ ] Track resident movements, leave, hospitalisation, transfers, AWOL and return status; preserve location/movement history.
+- [ ] Track expected return and overdue leave; connect movements to admission and bed availability rules.
+- [ ] Implement approved visitors, relationships, booking, permission status, check-in/out, items brought in, staff authorisation and visit incidents.
+- [ ] Implement incident categories, reporting, severity, assignment, investigation, actions and valid closure/status workflows; correct submitted records through addenda rather than destructive edits.
+- [ ] Implement explicitly permission-restricted safeguarding records for vulnerable adults, minors and all specified abuse/neglect/exploitation concerns, with escalation and follow-up.
+- [ ] Implement complaints/grievances, investigation, resolution and corrective action tracking.
+- [ ] Implement meal plans, special/medical diets, allergy requirements, resident headcounts and kitchen requirements.
+- [ ] Connect residential incidents and risks to appropriate staff dashboards, tasks and notifications without exposing confidential content.
 
 ## Planned Phase 8: Discharge and recovery
 
 Specification sections 38–41 and 6.
 
-- [x] Implement discharge plans and mandatory readiness checks covering achieved goals, unresolved risks, medication, relapse prevention, accommodation, family support, work/education, support groups, appointments, referrals, emergency plans and summary documentation.
-- [x] Implement valid discharge approval/status transitions, discharge types, summaries, responsible staff and attributable dates.
-- [x] Complete medication instructions, referrals, belongings return, bed release and care continuity as part of discharge transactions.
-- [x] Preserve discharge records and revisions; audit discharge actions.
-- [x] Create aftercare cases, assigned staff, contacts and recovery-monitoring records; configure follow-up intervals such as 7/30/90/180/365 days.
-- [x] Track successful/unsuccessful contact, abstinence, lapse/relapse, support participation, employment/education, housing, family relations, medication adherence, wellbeing and referrals.
-- [x] Record relapse substance, date, triggers, circumstances, severity, consequences, protective factors, intervention and clinical review.
-- [x] Revise treatment/aftercare when relapse occurs; do not automatically close aftercare.
-- [x] Support readmission decisions and new admissions/episodes linked to the same permanent client record.
+- [ ] Implement discharge plans and mandatory readiness checks covering achieved goals, unresolved risks, medication, relapse prevention, accommodation, family support, work/education, support groups, appointments, referrals, emergency plans and summary documentation.
+- [ ] Implement valid discharge approval/status transitions, discharge types, summaries, responsible staff and attributable dates.
+- [ ] Complete medication instructions, referrals, belongings return, bed release and care continuity as part of discharge transactions.
+- [ ] Preserve discharge records and revisions; audit discharge actions.
+- [ ] Create aftercare cases, assigned staff, contacts and recovery-monitoring records; configure follow-up intervals such as 7/30/90/180/365 days.
+- [ ] Track successful/unsuccessful contact, abstinence, lapse/relapse, support participation, employment/education, housing, family relations, medication adherence, wellbeing and referrals.
+- [ ] Record relapse substance, date, triggers, circumstances, severity, consequences, protective factors, intervention and clinical review.
+- [ ] Revise treatment/aftercare when relapse occurs; do not automatically close aftercare.
+- [ ] Support readmission decisions and new admissions/episodes linked to the same permanent client record.
 
 ## Planned Phase 9: Inventory, staff and compliance
 
 Specification sections 45 and 47–49.
 
-- [x] Implement stores items, categories, units, suppliers, stock/reorder levels, batches and expiry tracking.
-- [x] Implement purchase request, approval, purchase order, goods receipt and issue workflows with enforced transitions.
-- [x] Implement stock issues/returns, adjustments, counts and variance reconciliation with attributable history.
-- [x] Implement staff profiles, employee numbers, departments/designations, qualifications, professional bodies/licences, employment state and contact details.
-- [x] Implement professional credential-expiry alerts.
-- [x] Implement departments, shifts, rosters, leave, availability and coverage with daily staff views.
-- [x] Implement compliance registers for the specified NACADA, facility/county, fire/public-health, pharmacy, ODPC, professional, insurance, policy and inspection records.
-- [x] Capture compliance references, authorities, dates, attachments, responsible people and valid status transitions.
-- [x] Generate configurable compliance expiry alerts, including 90/60/30/14/7-day intervals.
+- [ ] Implement stores items, categories, units, suppliers, stock/reorder levels, batches and expiry tracking.
+- [ ] Implement purchase request, approval, purchase order, goods receipt and issue workflows with enforced transitions.
+- [ ] Implement stock issues/returns, adjustments, counts and variance reconciliation with attributable history.
+- [ ] Implement staff profiles, employee numbers, departments/designations, qualifications, professional bodies/licences, employment state and contact details.
+- [ ] Implement professional credential-expiry alerts.
+- [ ] Implement departments, shifts, rosters, leave, availability and coverage with daily staff views.
+- [ ] Implement compliance registers for the specified NACADA, facility/county, fire/public-health, pharmacy, ODPC, professional, insurance, policy and inspection records.
+- [ ] Capture compliance references, authorities, dates, attachments, responsible people and valid status transitions.
+- [ ] Generate configurable compliance expiry alerts, including 90/60/30/14/7-day intervals.
 
 ## Planned Phase 10: Reporting, outcomes and quality
 
 Specification sections 52–53 and 78.
 
-- [x] Implement role-specific management, counsellor, nursing and finance dashboards using live operational data.
-- [x] Provide management visibility into residents, beds/occupancy, admissions/discharges, expected discharges, high risks, attendance, incidents, debt, expiry and overdue reviews.
-- [x] Implement clinical reports for active clients, diagnoses, risks, medication, referrals and outcomes.
-- [x] Implement rehabilitation reports for admissions, substance trends, therapy/programme attendance, plan completion, discharge and relapse.
-- [x] Implement aftercare reports for follow-up completion, abstinence, relapse, readmission, employment and reintegration.
-- [x] Implement financial reports for revenue, invoices, payments, outstanding debt, ageing, payment methods and sponsors.
-- [x] Implement residential reports for occupancy, length of stay, movements, admissions and discharge.
-- [x] Implement compliance/quality reports for licences, incidents, complaints, audits and corrective actions.
-- [x] Provide the specified date, demographic, programme, substance, status, discharge and responsible-professional filters.
-- [x] Support permission-controlled CSV exports and PDF export architecture; audit exports and use anonymised reporting where appropriate.
-- [x] Verify that the final system can answer every management/clinical/recovery question in specification section 78.
+- [ ] Implement role-specific management, counsellor, nursing and finance dashboards using live operational data.
+- [ ] Provide management visibility into residents, beds/occupancy, admissions/discharges, expected discharges, high risks, attendance, incidents, debt, expiry and overdue reviews.
+- [ ] Implement clinical reports for active clients, diagnoses, risks, medication, referrals and outcomes.
+- [ ] Implement rehabilitation reports for admissions, substance trends, therapy/programme attendance, plan completion, discharge and relapse.
+- [ ] Implement aftercare reports for follow-up completion, abstinence, relapse, readmission, employment and reintegration.
+- [ ] Implement financial reports for revenue, invoices, payments, outstanding debt, ageing, payment methods and sponsors.
+- [ ] Implement residential reports for occupancy, length of stay, movements, admissions and discharge.
+- [ ] Implement compliance/quality reports for licences, incidents, complaints, audits and corrective actions.
+- [ ] Provide the specified date, demographic, programme, substance, status, discharge and responsible-professional filters.
+- [ ] Support permission-controlled CSV exports and PDF export architecture; audit exports and use anonymised reporting where appropriate.
+- [ ] Verify that the final system can answer every management/clinical/recovery question in specification section 78.
 
 ## Shared scope: deliver alongside the relevant phase
 

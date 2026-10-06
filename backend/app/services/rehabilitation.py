@@ -54,12 +54,6 @@ class RehabilitationService:
         audit(self.db, self.request, f"{entity}.accessed", entity, self.actor, record_id)
 
     def save(self, model, values):
-        # Scan for crisis keywords in any text fields
-        from app.services.crisis import scan_text_for_crisis
-        for key, val in values.items():
-            if isinstance(val, str):
-                scan_text_for_crisis(val)
-                
         row = model(
             **values,
             facility_id=self.actor.facility_id,
@@ -68,6 +62,20 @@ class RehabilitationService:
         )
         self.db.add(row)
         self.db.flush()
+
+        from app.services.crisis import scan_text_for_crisis
+        client_id = getattr(row, "client_id", None)
+        source_entity = model.__name__
+        for key, val in values.items():
+            if isinstance(val, str):
+                scan_text_for_crisis(
+                    text=val,
+                    db=self.db,
+                    facility_id=self.actor.facility_id,
+                    client_id=client_id,
+                    source_entity=source_entity,
+                    source_entity_id=str(row.id)
+                )
         # Audit events contain record links and state, never clinical narrative.
         safe = {
             key: str(getattr(row, key))

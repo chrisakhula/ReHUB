@@ -54,12 +54,6 @@ class ClinicalService:
         )
 
     def add(self, model, values):
-        # Scan for crisis keywords in any text fields
-        from app.services.crisis import scan_text_for_crisis
-        for key, val in values.items():
-            if isinstance(val, str):
-                scan_text_for_crisis(val)
-                
         row = model(
             **values,
             facility_id=self.actor.facility_id,
@@ -68,6 +62,20 @@ class ClinicalService:
         )
         self.db.add(row)
         self.db.flush()
+
+        from app.services.crisis import scan_text_for_crisis
+        client_id = getattr(row, "client_id", None)
+        source_entity = model.__name__
+        for key, val in values.items():
+            if isinstance(val, str):
+                scan_text_for_crisis(
+                    text=val,
+                    db=self.db,
+                    facility_id=self.actor.facility_id,
+                    client_id=client_id,
+                    source_entity=source_entity,
+                    source_entity_id=str(row.id)
+                )
         self.event(
             "clinical.created", row, new={"admission_id": str(getattr(row, "admission_id", ""))}
         )

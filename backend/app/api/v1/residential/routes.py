@@ -6,8 +6,13 @@ from app.core.database import get_db
 from app.models.residential import ResidentMovement, Incident
 from app.schemas.residential import ResidentMovementCreate, ResidentMovementResponse, IncidentCreate, IncidentResponse
 
-router = APIRouter(prefix="/residential", tags=["Residential"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/residential",
+    tags=["Residential"],
+    dependencies=[Depends(require_permission("nursing.view"))]
+)
 @router.get("/movements")
 def get_movements(page: int = 1, admission_id: Optional[str] = None, db: Session = Depends(get_db)):
     query = db.query(ResidentMovement)

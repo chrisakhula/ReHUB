@@ -6,8 +6,13 @@ from app.core.database import get_db
 from app.models.discharge import DischargePlan, AftercareCase
 from app.schemas.discharge import DischargePlanCreate, DischargePlanResponse, AftercareCaseCreate, AftercareCaseResponse
 
-router = APIRouter(prefix="/discharge", tags=["Discharge"])
+from app.core.permissions import require_permission
 
+router = APIRouter(
+    prefix="/discharge",
+    tags=["Discharge"],
+    dependencies=[Depends(require_permission("admission.view"))]
+)
 @router.get("/plans")
 def get_discharge_plans(page: int = 1, admission_id: Optional[str] = None, db: Session = Depends(get_db)):
     query = db.query(DischargePlan)
