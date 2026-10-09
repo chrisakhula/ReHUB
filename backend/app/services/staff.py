@@ -3,7 +3,7 @@
 from fastapi import Request
 from sqlalchemy.orm import Session
 
-from app.audit.events import audit
+from app.audit.service import audit
 from app.models.staff import StaffProfile, StaffShift
 from app.schemas.staff import StaffProfileIn, StaffShiftIn
 from app.models.identity import User

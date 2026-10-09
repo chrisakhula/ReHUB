@@ -305,3 +305,38 @@ def toxicology_trends(
         "items": [{"id": row.id, "test_at": row.test_at, "results": row.results} for row in rows],
         "meta": meta,
     }
+
+
+@router.get("/crisis-alerts")
+def crisis_alerts(
+    request: Request,
+    args=Depends(care_paging),
+    db: Session = Depends(get_db, scope="function"),
+    actor=Depends(require_permission("clinical.view")),
+):
+    from app.audit.service import audit
+    service = ClinicalService(db, request, actor)
+    rows, meta = service.repo.page(models.CrisisAlert, **args, status="NEW")
+    audit(db, request, "clinical.crisis_alerts_accessed", "crisis_alert", actor)
+    return {"items": [record_out(row) for row in rows], "meta": meta}
+
+
+@router.post("/crisis-alerts/{record_id}/acknowledge")
+def acknowledge_crisis_alert(
+    record_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db, scope="function"),
+    actor=Depends(require_permission("clinical.create_note")),
+):
+    from datetime import datetime
+    from app.core.time import EAT
+    from app.audit.service import audit
+    service = ClinicalService(db, request, actor)
+    alert = service.repo.require(models.CrisisAlert, record_id)
+    if alert.status == "NEW":
+        alert.status = "ACKNOWLEDGED"
+        alert.acknowledged_by = actor.id
+        alert.acknowledged_at = datetime.now(EAT)
+        audit(db, request, "clinical.crisis_alert_acknowledged", "crisis_alert", actor, record_id)
+        db.commit()
+    return record_out(alert)

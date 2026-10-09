@@ -3,7 +3,7 @@
 from fastapi import Request
 from sqlalchemy.orm import Session
 
-from app.audit.events import audit
+from app.audit.service import audit
 from app.models.compliance import ComplianceRegister, ComplianceInspection
 from app.schemas.compliance import ComplianceRegisterIn, ComplianceInspectionIn
 from app.models.identity import User

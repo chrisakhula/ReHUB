@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Row, Col, Card, Form, Button, Table } from "react-bootstrap";
-import { api } from "../../api/client";
+import { save } from "../../api/client";
 import { useAuth } from "../../auth/AuthProvider";
 
 interface ReportResult {
@@ -30,11 +30,11 @@ export function ReportingPage() {
     setResult(null);
     
     try {
-      const res = await api.post<ReportResult>(`/api/v1/reporting/${reportType}`, {
+      const res = await save<ReportResult>(`/reporting/${reportType}`, {
         start_date: startDate || undefined,
         end_date: endDate || undefined
       });
-      setResult(res.data);
+      setResult(res);
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to generate report");
     } finally {

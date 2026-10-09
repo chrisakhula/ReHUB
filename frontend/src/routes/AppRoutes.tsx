@@ -81,6 +81,7 @@ const PharmacyPage = lazy(() =>
 
 
 const BillingPage = lazy(() => import("../modules/billing/BillingPage").then((m) => ({ default: m.BillingPage })));
+const FinancePage = lazy(() => import("../modules/finance/FinancePage").then((m) => ({ default: m.FinancePage })));
 const InventoryPage = lazy(() => import("../modules/inventory/InventoryPage").then((m) => ({ default: m.InventoryPage })));
 const DischargePage = lazy(() => import("../modules/discharge/DischargePage").then((m) => ({ default: m.DischargePage })));
 const ReportingPage = lazy(() => import("../modules/reporting/ReportingPage").then((m) => ({ default: m.ReportingPage })));
@@ -188,6 +189,7 @@ export function AppRoutes() {
 
               
               <Route element={<PermissionGuard permission="billing.view" />}><Route path="/billing/*" element={<BillingPage />} /></Route>
+              <Route element={<PermissionGuard permission="finance.view" />}><Route path="/finance/*" element={<FinancePage />} /></Route>
               <Route element={<PermissionGuard permission="inventory.view" />}><Route path="/inventory/*" element={<InventoryPage />} /></Route>
               <Route element={<PermissionGuard permission="discharge.view" />}><Route path="/discharge/*" element={<DischargePage />} /></Route>
               <Route element={<PermissionGuard permission="reporting.view" />}><Route path="/reporting/*" element={<ReportingPage />} /></Route>

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 
-from app.audit.events import audit
+from app.audit.service import audit
 from app.models.inventory import (
     Supplier,
     StoreItem,

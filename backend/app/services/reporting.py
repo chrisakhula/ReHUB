@@ -5,9 +5,9 @@ from fastapi import Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 
-from app.audit.events import audit
+from app.audit.service import audit
 from app.models.identity import User
-from app.models.clinical import Admission
+from app.models.clients import Admission
 from app.models.residential import Incident, ResidentMovement
 from app.models.billing import Invoice
 from app.models.discharge import DischargePlan

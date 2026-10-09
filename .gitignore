@@ -19,3 +19,11 @@ storage/
 
 .env*
 *.env
+
+# Deployment and server scripts
+deploy.py
+rehub_deploy.zip
+fix_nginx.py
+push_nginx.py
+test_nginx.py
+inspect_server.py

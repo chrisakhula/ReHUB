@@ -19,7 +19,7 @@ from app.models.billing import (
     MpesaTransaction
 )
 from app.schemas.billing import InvoiceIn, PaymentIn
-from app.audit.events import audit
+from app.audit.service import audit
 
 
 class FinanceService:

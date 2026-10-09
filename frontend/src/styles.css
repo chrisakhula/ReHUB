@@ -4,28 +4,39 @@
   --ink: #263647;
   --muted: #637383;
   --line: #dce2e7;
-  --surface: #f3f5f7;
+  --surface: #e0e5ec;
   --bs-primary: #24577b;
-  --bs-border-radius: 4px;
+  --bs-border-radius: 16px;
   --bs-body-color: var(--ink);
   --bs-body-bg: var(--surface);
+
+  /* Neumorphism Variables */
+  --neu-light: #ffffff;
+  --neu-dark: #a3b1c6;
+  --neu-shadow: 7px 7px 15px var(--neu-dark), -7px -7px 15px var(--neu-light);
+  --neu-shadow-sm: 4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light);
+  --neu-inset: inset 5px 5px 10px var(--neu-dark), inset -5px -5px 10px var(--neu-light);
 }
 
 [data-bs-theme="dark"] {
-  --navy: #0b141e;
-  --navy-light: #132433;
+  --navy: #13171c;
+  --navy-light: #1c2128;
   --ink: #e2e8f0;
   --muted: #8b9eb0;
-  --line: #2d3f50;
-  --surface: #132433;
+  --line: transparent;
+  --surface: #1a1e24;
   --bs-primary: #3b82f6;
   --bs-body-color: var(--ink);
-  --bs-body-bg: #0b141e;
+  --bs-body-bg: var(--surface);
+  
+  /* Neumorphism Dark */
+  --neu-light: #232930;
+  --neu-dark: #111318;
   
   /* Additional overrides for dark mode */
-  --bs-card-bg: #1a2a38;
-  --bs-card-border-color: var(--line);
-  --bs-card-cap-bg: #132433;
+  --bs-card-bg: var(--surface);
+  --bs-card-border-color: transparent;
+  --bs-card-cap-bg: var(--surface);
 }
 
 [data-bs-theme="dark"] .card {
@@ -98,47 +109,74 @@ a {
   color: #24577b;
 }
 .btn-primary {
-  --bs-btn-bg: #24577b;
-  --bs-btn-border-color: #24577b;
-  --bs-btn-hover-bg: #1b4564;
-  --bs-btn-hover-border-color: #1b4564;
-  --bs-btn-active-bg: #17334c;
+  --bs-btn-bg: var(--surface);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: var(--surface);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: var(--surface);
+  color: var(--bs-primary);
 }
 .btn {
   font-size: 14px;
-  font-weight: 550;
-  padding: 8px 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  background: var(--surface);
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: var(--neu-shadow-sm);
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  box-shadow: var(--neu-shadow);
+  transform: translateY(-1px);
+}
+.btn:active, .btn.active {
+  box-shadow: var(--neu-inset);
+  transform: translateY(1px);
 }
 .btn-sm {
   font-size: 12px;
-  padding: 5px 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 .form-control,
 .form-select {
   font-size: 14px;
-  min-height: 40px;
-  background-color: white;
+  min-height: 44px;
+  background-color: var(--surface) !important;
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: var(--neu-inset);
+  color: var(--ink) !important;
+}
+.form-control:focus, .form-select:focus {
+  box-shadow: var(--neu-inset), 0 0 0 3px rgba(36, 87, 123, 0.15);
+  background-color: var(--surface) !important;
 }
 .form-label {
   font-size: 13px;
   font-weight: 600;
 }
 .card {
-  background: white;
-  border: 1px solid var(--line);
-  box-shadow: none;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--neu-shadow);
+  margin-bottom: 24px;
 }
 .card-header {
-  background: #fafbfc;
-  border-bottom: 1px solid var(--line);
-  padding: 17px 20px;
+  background: transparent;
+  border-bottom: none;
+  padding: 20px 24px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 .card-header h2 {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 700;
 }
 .card-body {
   padding: 22px;
@@ -267,14 +305,17 @@ legend.card-header {
   flex-direction: column;
 }
 .topbar {
-  min-height: 76px;
-  background: white;
-  border-bottom: 1px solid var(--line);
+  min-height: 80px;
+  background: var(--surface);
+  border-bottom: none;
+  box-shadow: var(--neu-shadow);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 30px;
   gap: 16px;
+  z-index: 10;
+  position: relative;
 }
 .institution-name {
   font-weight: 600;
@@ -312,12 +353,14 @@ legend.card-header {
   max-width: 75ch;
 }
 .phase-notice {
-  background: #eaf0f5;
-  border: 1px solid #cedce7;
-  padding: 17px 20px;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--neu-inset);
+  padding: 20px 24px;
   margin-bottom: 24px;
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: flex-start;
 }
 .phase-notice > i {
@@ -368,22 +411,27 @@ legend.card-header {
 .workspace-links {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 12px 0;
 }
 .workspace-link {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   min-height: 92px;
-  padding: 18px 20px;
+  padding: 20px 24px;
   color: var(--ink);
   text-decoration: none;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--neu-shadow);
+  transition: all 0.2s ease;
 }
 .workspace-link:hover {
-  background: #f6f9fb;
+  box-shadow: var(--neu-inset);
   color: var(--ink);
+  transform: translateY(1px);
 }
 .workspace-link > i:first-child {
   color: #426983;
@@ -488,14 +536,19 @@ legend.card-header {
   padding: 15px 20px;
   color: var(--ink);
   vertical-align: middle;
-  font-size: 12px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 .table thead th {
-  background: #fafbfc;
+  background: var(--surface);
   color: var(--muted);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   white-space: nowrap;
+  border-bottom: none;
+  box-shadow: var(--neu-shadow-sm);
 }
 .table td strong {
   font-weight: 600;
@@ -601,7 +654,7 @@ legend.card-header {
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: white;
+  background: var(--surface);
 }
 .login-form {
   max-width: 390px;
@@ -625,9 +678,11 @@ legend.card-header {
 .auth-single {
   max-width: 480px;
   margin: 8vh auto;
-  padding: 32px;
-  background: white;
-  border: 1px solid var(--line);
+  padding: 40px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--neu-shadow);
+  border: none;
 }
 .skip-link {
   position: fixed;
@@ -783,9 +838,12 @@ code {
 }
 
 .nested-fields {
-  border: 1px solid var(--line);
-  padding: 18px;
-  background: #fafbfc;
+  border: none;
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--surface);
+  box-shadow: var(--neu-inset);
+  margin-bottom: 20px;
 }
 .nested-fields legend {
   float: none;

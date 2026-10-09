@@ -35,7 +35,8 @@ const navGroups = [
     links: [
       { to: "/pharmacy", name: "Pharmacy", icon: "box-seam", permission: "pharmacy.view" },
       { to: "/residential", name: "Residential beds", icon: "building", permission: "residential.view" },
-      { to: "/billing/invoices", name: "Billing & Finance", icon: "receipt", permission: "billing.view" },
+      { to: "/billing/invoices", name: "Billing", icon: "receipt", permission: "billing.view" },
+      { to: "/finance/accounts", name: "Finance ledger", icon: "bank", permission: "finance.view" },
       { to: "/discharge/plans", name: "Discharge & Aftercare", icon: "box-arrow-right", permission: "discharge.view" },
       { to: "/inventory/items", name: "Inventory", icon: "boxes", permission: "inventory.view" },
       { to: "/staff/profiles", name: "Staff & HR", icon: "person-badge", permission: "staff.view" },

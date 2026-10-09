@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import "./DashboardPage.css";
 import { api } from "../../api/client";
+import { RiskAlerts } from "./RiskAlerts";
+import { CrisisAlerts } from "./CrisisAlerts";
+
 
 interface DashboardMetrics {
   active_clients: number;
@@ -21,8 +24,8 @@ export function DashboardPage() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const res = await api.get<DashboardMetrics>("/api/v1/reporting/dashboard");
-        setMetrics(res.data);
+        const res = await api<DashboardMetrics>("/reporting/dashboard");
+        setMetrics(res);
       } catch (err) {
         console.error("Failed to load dashboard metrics", err);
       } finally {
@@ -112,7 +115,6 @@ export function DashboardPage() {
       <div className="dashboard-header">
         <div className="dashboard-breadcrumb">
           Workspace / <span>Overview</span>
-          <span className="badge-design-sample">Synthetic design sample</span>
         </div>
         
         <div className="dashboard-title-row">
@@ -166,8 +168,11 @@ export function DashboardPage() {
 
         {/* Right Column */}
         <div className="dashboard-side-col">
+          <CrisisAlerts />
+          <RiskAlerts />
           <div className="dash-card mb-4 risk-register-card">
             <div className="dash-card-header d-flex justify-content-between align-items-center">
+
               <h2><i className="bi bi-graph-up me-2 text-primary"></i> Live Metrics</h2>
               {auth.can("reporting.view") && <Link to="/reporting" className="dash-link">View reports <i className="bi bi-arrow-right"></i></Link>}
             </div>
@@ -216,10 +221,10 @@ export function DashboardPage() {
             <div className="dash-card-body pt-3">
               <div className="user-profile-row mb-4">
                 <div className="user-avatar">
-                  {auth.user?.full_name?.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() || 'DS'}
+                  {auth.user?.full_name?.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() || 'U'}
                 </div>
                 <div className="user-info">
-                  <strong>{auth.user?.full_name || 'Demo staff'}</strong>
+                  <strong>{auth.user?.full_name || 'User'}</strong>
                   <small>Assigned care-team access</small>
                 </div>
               </div>

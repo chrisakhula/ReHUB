@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import get_settings
 from app.models.rehabilitation import AssessmentInstrument
+from app.models.identity import Facility
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed_cssrs")
@@ -24,12 +25,18 @@ def seed():
 
     logger.info("Creating C-SSRS instrument...")
     
+    facility = db.query(Facility).first()
+    if not facility:
+        logger.error("No facility found. Please run core seeds first.")
+        return
+    
     cssrs = AssessmentInstrument(
         code="C-SSRS",
         name="Columbia-Suicide Severity Rating Scale (Screening Version)",
         instructions="Ask questions 1 and 2. If both are negative, proceed to question 6. If either is positive, ask questions 3, 4, and 5.",
-        version="1.0",
+        version=1,
         active=True,
+        facility_id=facility.id,
         questions=[
             {
                 "key": "q1",

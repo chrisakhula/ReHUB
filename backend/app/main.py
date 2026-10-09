@@ -16,6 +16,7 @@ from app.api.v1.clinical.routes import router as clinical_router
 from app.api.v1.medication.routes import router as medication_router
 from app.api.v1.rehabilitation.routes import router as rehabilitation_router
 from app.api.v1.billing.routes import router as billing_router
+from app.api.v1.finance.routes import router as finance_router
 from app.api.v1.residential.routes import router as residential_router
 from app.api.v1.discharge.routes import router as discharge_router
 from app.api.v1.inventory.routes import router as inventory_router
@@ -51,6 +52,7 @@ for router in [
     medication_router,
     care_router,
     billing_router,
+    finance_router,
     residential_router,
     discharge_router,
     inventory_router,
