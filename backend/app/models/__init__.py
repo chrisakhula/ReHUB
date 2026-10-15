@@ -2,6 +2,7 @@ from app.models import (  # noqa: F401
     assessment_types,  # noqa: F401
     clients,
     clinical,
+    compliance,
     identity,
     medication,
     rehabilitation,
@@ -14,4 +15,5 @@ from app.models import (  # noqa: F401
     jobs,
     clinical_governance,
     privacy,
+    staff,
 )
