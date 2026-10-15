@@ -1,6 +1,7 @@
 """Billing, payments, and financial management models."""
 
 from datetime import date, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
@@ -184,10 +185,19 @@ class MpesaTransaction(Record, Base):
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     transaction_reference: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     phone_number: Mapped[str] = mapped_column(String(20))
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     payer_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_payers.id"), nullable=True)
-    invoice_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_invoices.id"), nullable=True)
-    status: Mapped[str] = mapped_column(String(30), default="PENDING") # PENDING, RECONCILED, FAILED
+    client_id: Mapped[UUID | None] = mapped_column(ForeignKey("clients.id"), nullable=True, index=True)
+    invoice_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_invoices.id"), nullable=True, index=True)
+    merchant_request_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    checkout_request_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    response_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    customer_message: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="CREATED", index=True)  # CREATED, REQUESTED, PENDING, SUCCESS, FAILED, TIMEOUT, CANCELLED, RECONCILED
+    reconciliation_status: Mapped[str] = mapped_column(String(30), default="UNMATCHED", index=True)  # AUTO_RECONCILED, MANUAL_REVIEW, UNMATCHED, DUPLICATE, FAILED, REVERSED
     reconciled_payment_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_payments.id"), nullable=True)
+    reconciled_by_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    reconciled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reconciliation_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     raw_payload: Mapped[str] = mapped_column(Text, default="")

@@ -31,6 +31,7 @@ class MedicationRoute(Record, Base):
 class Medication(Record, Base):
     __tablename__ = "medications"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     generic_name: Mapped[str] = mapped_column(String(150))
     brand_name: Mapped[str | None] = mapped_column(String(150))
     formulation: Mapped[str] = mapped_column(String(100))
@@ -60,6 +61,7 @@ class Prescription(Record, Base):
         ),
     )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     client_id: Mapped[UUID] = mapped_column(ForeignKey("clients.id"), index=True)
     admission_id: Mapped[UUID] = mapped_column(ForeignKey("admissions.id"), index=True)
     medication_id: Mapped[UUID] = mapped_column(ForeignKey("medications.id"), index=True)
@@ -127,6 +129,7 @@ class MedicationAdministration(Record, Base):
         UniqueConstraint("dose_id", name="uq_dose_administration"),
     )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     client_id: Mapped[UUID] = mapped_column(ForeignKey("clients.id"), index=True)
     admission_id: Mapped[UUID] = mapped_column(ForeignKey("admissions.id"), index=True)
     prescription_id: Mapped[UUID] = mapped_column(ForeignKey("prescriptions.id"), index=True)

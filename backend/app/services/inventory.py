@@ -5,6 +5,7 @@ from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.audit.service import audit
+from app.core.reference_generator import generate_reference_code
 from app.models.inventory import (
     Supplier,
     StoreItem,
@@ -41,8 +42,11 @@ class InventoryService:
         return supplier
 
     def create_store_item(self, data: StoreItemIn) -> StoreItem:
+        dump = data.model_dump()
+        if not dump.get("code"):
+            dump["code"] = generate_reference_code(self.db, self.actor.facility_id, "STOCK_ITEM")
         item = StoreItem(
-            **data.model_dump(),
+            **dump,
             facility_id=self.actor.facility_id
         )
         self.db.add(item)
@@ -52,8 +56,11 @@ class InventoryService:
         return item
 
     def create_purchase_order(self, data: PurchaseOrderIn) -> PurchaseOrder:
+        dump = data.model_dump()
+        if not dump.get("order_number"):
+            dump["order_number"] = generate_reference_code(self.db, self.actor.facility_id, "PURCHASE_ORDER")
         po = PurchaseOrder(
-            **data.model_dump(),
+            **dump,
             facility_id=self.actor.facility_id,
             requested_by_id=self.actor.id
         )

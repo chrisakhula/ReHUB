@@ -7,6 +7,7 @@ from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.audit.service import audit
+from app.core.reference_generator import generate_reference_code
 from app.models.discharge import (
     DischargePlan,
     AftercareCase,
@@ -33,11 +34,12 @@ class DischargeService:
         audit(self.db, self.request, action, entity.__class__.__name__, self.actor, getattr(entity, "id", None))
 
     def create_discharge_plan(self, data: DischargePlanIn) -> DischargePlan:
-        plan = DischargePlan(
-            **data.model_dump(),
-            facility_id=self.actor.facility_id,
-            responsible_staff_id=data.responsible_staff_id or self.actor.id
-        )
+        dump = data.model_dump()
+        dump["facility_id"] = self.actor.facility_id
+        dump["reference_code"] = generate_reference_code(self.db, self.actor.facility_id, "DISCHARGE")
+        if not dump.get("responsible_staff_id"):
+            dump["responsible_staff_id"] = self.actor.id
+        plan = DischargePlan(**dump)
         self.db.add(plan)
         self.db.commit()
         self.db.refresh(plan)
@@ -67,11 +69,12 @@ class DischargeService:
         return plan
 
     def create_aftercare_case(self, data: AftercareCaseIn) -> AftercareCase:
-        case = AftercareCase(
-            **data.model_dump(),
-            facility_id=self.actor.facility_id,
-            assigned_staff_id=data.assigned_staff_id or self.actor.id
-        )
+        dump = data.model_dump()
+        dump["facility_id"] = self.actor.facility_id
+        dump["reference_code"] = generate_reference_code(self.db, self.actor.facility_id, "AFTERCARE")
+        if not dump.get("assigned_staff_id"):
+            dump["assigned_staff_id"] = self.actor.id
+        case = AftercareCase(**dump)
         self.db.add(case)
         self.db.commit()
         self.db.refresh(case)

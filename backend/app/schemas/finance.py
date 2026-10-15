@@ -44,6 +44,15 @@ class FiscalPeriodIn(RecordBase):
         return self
 
 
+class ReopenPeriodIn(RecordBase):
+    reason: str = Field(
+        ...,
+        min_length=10,
+        max_length=500,
+        description="Mandatory audit justification for reopening closed/locked fiscal period",
+    )
+
+
 class JournalLineIn(RecordBase):
     account_id: UUID | None = None
     account_code: str | None = None

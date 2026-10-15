@@ -20,7 +20,7 @@ class MedicationIn(CareModel):
 
 
 class MedicationOut(CareOut, MedicationIn):
-    pass
+    reference_code: str
 
 
 class RouteIn(CareModel):
@@ -81,6 +81,7 @@ class PrescriptionChange(PrescriptionIn):
 
 
 class PrescriptionOut(CareOut, PrescriptionIn):
+    reference_code: str
     client_id: UUID
     generic_name: str
     brand_name: str | None

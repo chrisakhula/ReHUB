@@ -12,3 +12,5 @@ httpx>=0.28,<1
 ruff>=0.11,<1
 pypdf>=6,<7
 Pillow>=11,<13
+celery[redis]>=5.3,<6
+redis>=5.0,<6

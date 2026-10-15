@@ -131,8 +131,8 @@ export const rx: Resource = {
   ],
 };
 export const adminFields: Field[] = [
-  text("prescription_id", "Prescription ID", true),
-  text("dose_id", "Scheduled dose ID"),
+  text("prescription_id", "Prescription Reference", true),
+  text("dose_id", "Scheduled Dose Reference"),
   stamp("administered_at", "Actual administration / outcome time", true),
   choice("status", "Outcome", [
     "GIVEN",

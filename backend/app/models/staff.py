@@ -13,12 +13,18 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
+import uuid
 from app.core.database import Base
-from app.models.identity import Record
+from app.models.identity import utcnow
 
 
-class StaffProfile(Record, Base):
+class StaffProfile(Base):
     __tablename__ = "staff_profiles"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), unique=True)
     
@@ -35,8 +41,13 @@ class StaffProfile(Record, Base):
     emergency_contact: Mapped[str] = mapped_column(String(200), default="")
 
 
-class StaffShift(Record, Base):
+class StaffShift(Base):
     __tablename__ = "staff_shifts"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     staff_id: Mapped[UUID] = mapped_column(ForeignKey("staff_profiles.id"))
     

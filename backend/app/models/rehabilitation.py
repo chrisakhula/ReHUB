@@ -80,6 +80,7 @@ class AssessmentInstrument(FacilityRecord, Base):
 
 class InstrumentAssessment(AdmissionRecord, Base):
     __tablename__ = "instrument_assessments"
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     instrument_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("assessment_instruments.id"), index=True
     )
@@ -96,6 +97,7 @@ class InstrumentAssessment(AdmissionRecord, Base):
 class BiopsychosocialAssessment(AdmissionRecord, Base):
     __tablename__ = "biopsychosocial_assessments"
     __table_args__ = (CheckConstraint("status IN ('DRAFT','COMPLETED','REVIEWED')"),)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     biological: Mapped[dict] = mapped_column(JSON)
     psychological: Mapped[dict] = mapped_column(JSON)
     social: Mapped[dict] = mapped_column(JSON)
@@ -117,6 +119,7 @@ class RiskAssessment(AdmissionRecord, Base):
         CheckConstraint("level IN ('LOW','MODERATE','HIGH','CRITICAL')"),
         CheckConstraint("status IN ('ACTIVE','RESOLVED')"),
     )
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     risk_type: Mapped[str] = mapped_column(String(50), index=True)
     level: Mapped[str] = mapped_column(String(20), index=True)
     risk_factors: Mapped[str] = mapped_column(Text)
@@ -139,6 +142,7 @@ class TreatmentPlan(AdmissionRecord, Base):
             "status IN ('DRAFT','ACTIVE','UNDER_REVIEW','REVISED','COMPLETED','CANCELLED')"
         ),
     )
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     root_id: Mapped[uuid.UUID] = mapped_column(index=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     presenting_problem: Mapped[str] = mapped_column(Text)

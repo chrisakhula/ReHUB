@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from app.audit.service import audit
 from app.core.permissions import aware
+from app.core.reference_generator import generate_reference_code
 from app.core.time import EAT
 from app.models.clients import (
     Admission,
@@ -151,7 +152,11 @@ class ClientService:
         if not client.active or client.deceased:
             raise HTTPException(409, "Referral requires an active client")
         values = data.model_dump(mode="json")
-        values.update(client_id=data.client_id, referral_date=data.referral_date)
+        values.update(
+            client_id=data.client_id,
+            referral_date=data.referral_date,
+            reference_code=generate_reference_code(self.db, self.actor.facility_id, "REFERRAL"),
+        )
         if values["documents"]:
             # The document subsystem is a later phase. Reject unverifiable references.
             raise HTTPException(

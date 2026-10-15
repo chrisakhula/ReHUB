@@ -11,4 +11,7 @@ from app.models import (  # noqa: F401
     discharge,
     inventory,
     shared,
+    jobs,
+    clinical_governance,
+    privacy,
 )

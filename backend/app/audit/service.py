@@ -26,7 +26,7 @@ def audit(
             previous_values=previous,
             new_values=new,
             reason=reason,
-            ip_address=request.client.host if request.client else None,
-            user_agent=request.headers.get("user-agent", "")[:500],
+            ip_address=request.client.host if request and request.client else None,
+            user_agent=request.headers.get("user-agent", "")[:500] if request else "",
         )
     )

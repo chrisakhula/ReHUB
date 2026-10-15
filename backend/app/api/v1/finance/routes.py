@@ -30,6 +30,7 @@ from app.schemas.finance import (
     FiscalPeriodIn,
     ManualJournalIn,
     PaymentReconciliationIn,
+    ReopenPeriodIn,
     SupplierIn,
     SupplierInvoiceIn,
     SupplierPaymentIn,
@@ -201,7 +202,7 @@ def lock_fiscal_period(
     period_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
-    actor=Depends(require_permission("finance.configure")),
+    actor=Depends(require_permission("finance.close_period")),
 ):
     return period_row(service(db, request, actor).set_period_status(period_id, "LOCKED"))
 
@@ -211,7 +212,7 @@ def close_fiscal_period(
     period_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
-    actor=Depends(require_permission("finance.configure")),
+    actor=Depends(require_permission("finance.close_period")),
 ):
     return period_row(service(db, request, actor).set_period_status(period_id, "CLOSED"))
 
@@ -219,11 +220,14 @@ def close_fiscal_period(
 @router.post("/fiscal-periods/{period_id}/reopen")
 def reopen_fiscal_period(
     period_id: UUID,
+    payload: ReopenPeriodIn,
     request: Request,
     db: Session = Depends(get_db),
-    actor=Depends(require_permission("finance.configure")),
+    actor=Depends(require_permission("finance.close_period")),
 ):
-    return period_row(service(db, request, actor).set_period_status(period_id, "OPEN"))
+    return period_row(
+        service(db, request, actor).set_period_status(period_id, "OPEN", reason=payload.reason)
+    )
 
 
 @router.get("/journals")

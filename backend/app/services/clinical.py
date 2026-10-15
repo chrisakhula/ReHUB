@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 
 from app.audit.service import audit
 from app.core.permissions import aware
+from app.core.reference_generator import generate_reference_code
 from app.core.security import permission_codes
 from app.models.clinical import (
     ClinicalAllergy,
@@ -54,8 +55,19 @@ class ClinicalService:
         )
 
     def add(self, model, values):
+        val_copy = dict(values)
+        if hasattr(model, "reference_code") and "reference_code" not in val_copy:
+            kind_map = {
+                ClinicalEncounter: "ENCOUNTER",
+                MedicalOrder: "MEDICATION_ORDER",
+                LaboratoryRequest: "LAB_ORDER",
+            }
+            kind = kind_map.get(model, model.__name__.upper())
+            val_copy["reference_code"] = generate_reference_code(
+                self.db, self.actor.facility_id, kind
+            )
         row = model(
-            **values,
+            **val_copy,
             facility_id=self.actor.facility_id,
             created_by=self.actor.id,
             updated_by=self.actor.id,

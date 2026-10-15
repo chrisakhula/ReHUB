@@ -15,10 +15,38 @@ class CareRepository:
         self.db = db
         self.actor = actor
 
-    def require(self, model, record_id: UUID, lock: bool = False):
-        statement = select(model).where(
-            model.id == record_id, model.facility_id == self.actor.facility_id
+    def require(self, model, record_id: UUID | str, lock: bool = False):
+        condition = None
+        if isinstance(record_id, UUID):
+            condition = model.id == record_id
+        else:
+            try:
+                parsed_uuid = UUID(str(record_id))
+                uuid_cond = model.id == parsed_uuid
+            except (ValueError, AttributeError):
+                uuid_cond = None
+
+            ref_cond = None
+            for attr in ("reference_code", "client_number", "admission_number", "code", "invoice_number"):
+                if hasattr(model, attr):
+                    ref_cond = getattr(model, attr) == str(record_id)
+                    break
+
+            if uuid_cond is not None and ref_cond is not None:
+                condition = uuid_cond | ref_cond
+            elif uuid_cond is not None:
+                condition = uuid_cond
+            elif ref_cond is not None:
+                condition = ref_cond
+            else:
+                condition = model.id == record_id
+
+        facility_cond = (
+            model.facility_id == self.actor.facility_id
+            if hasattr(model, "facility_id")
+            else True
         )
+        statement = select(model).where(condition, facility_cond)
         if lock:
             statement = statement.with_for_update()
         record = self.db.scalar(statement)
@@ -26,12 +54,12 @@ class CareRepository:
             raise HTTPException(404, "Record not found")
         return record
 
-    def client(self, record_id: UUID, lock: bool = False):
+    def client(self, record_id: UUID | str, lock: bool = False):
         from app.models.clients import Client
 
         return self.require(Client, record_id, lock)
 
-    def admission(self, record_id: UUID, writable: bool = True, lock: bool = False):
+    def admission(self, record_id: UUID | str, writable: bool = True, lock: bool = False):
         from app.models.clients import Admission
 
         admission = self.require(Admission, record_id, lock)
@@ -76,11 +104,18 @@ class CareRepository:
         if start and end and start > end:
             raise HTTPException(422, "Start date must be before end date")
         statement = select(model).where(model.facility_id == self.actor.facility_id, *filters)
-        if q and fields:
+        if q:
             escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            statement = statement.where(
-                or_(*(field.ilike(f"%{escaped}%", escape="\\") for field in fields))
-            )
+            search_fields = list(fields)
+            for attr in ("reference_code", "client_number", "admission_number", "code", "invoice_number"):
+                if hasattr(model, attr):
+                    col = getattr(model, attr)
+                    if col not in search_fields:
+                        search_fields.append(col)
+            if search_fields:
+                statement = statement.where(
+                    or_(*(field.ilike(f"%{escaped}%", escape="\\") for field in search_fields))
+                )
         if admission_id:
             self.admission(admission_id, writable=False)
             statement = statement.where(model.admission_id == admission_id)

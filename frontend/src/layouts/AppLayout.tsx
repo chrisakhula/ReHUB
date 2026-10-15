@@ -6,6 +6,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { identityApi } from "../api/identity";
 import { ErrorNotice } from "../components/Common";
 import { CrisisHelpButton } from "../components/CrisisHelpModal";
+import { GlobalQuickSearch } from "../components/GlobalQuickSearch";
 
 
 const navGroups = [
@@ -51,6 +52,8 @@ const navGroups = [
       { to: "/administration/roles", name: "Roles & permissions", icon: "shield-check", permission: "roles.manage" },
       { to: "/administration/departments", name: "Departments", icon: "diagram-3", permission: "departments.manage" },
       { to: "/administration/audit", name: "Audit trail", icon: "journal-text", permission: "audit.view" },
+      { to: "/administration/jobs", name: "Background jobs", icon: "cpu", permission: ["audit.view", "settings.manage"] },
+      { to: "/administration/readiness", name: "Go-Live Readiness", icon: "patch-check", permission: ["audit.view", "settings.manage"] },
       { to: "/administration/settings", name: "Institution settings", icon: "gear", permission: "settings.manage" },
     ]
   }
@@ -132,7 +135,7 @@ export function AppLayout() {
         <i className="bi bi-lock" aria-hidden="true" /> Restricted institutional
         access
         <br />
-        <span>Care modules, Phases 1-5</span>
+        <span>ReHUB Institutional EHR v1.0.0</span>
       </div>
     </>
   );
@@ -163,12 +166,13 @@ export function AppLayout() {
               {settings.data?.name ?? "ARS Rehabilitation Institution"}
             </span>
             <div className="ms-3 d-flex align-items-center gap-2">
-              <Button variant="outline-secondary" size="sm" onClick={toggleTheme} aria-label="Toggle theme">
-                <i className={`bi bi-${theme === 'dark' ? 'sun' : 'moon'}`} />
+              <Button variant="outline-secondary" size="sm" className="theme-toggle-btn" onClick={toggleTheme} aria-label="Toggle theme">
+                <i className={`bi bi-${theme === 'dark' ? 'sun-fill' : 'moon-stars-fill'}`} />
               </Button>
               <CrisisHelpButton />
             </div>
           </div>
+          <GlobalQuickSearch />
           <div className="topbar-user">
             <div>
               <strong>{auth.user?.full_name}</strong>

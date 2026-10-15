@@ -36,6 +36,7 @@ class DischargePlanIn(RecordBase):
 
 class DischargePlanOut(DischargePlanIn):
     id: UUID
+    reference_code: str
     facility_id: UUID
     created_at: datetime
     updated_at: datetime
@@ -52,6 +53,7 @@ class AftercareCaseIn(RecordBase):
 
 class AftercareCaseOut(AftercareCaseIn):
     id: UUID
+    reference_code: str
     facility_id: UUID
     end_date: datetime | None = None
     created_at: datetime

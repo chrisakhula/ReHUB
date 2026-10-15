@@ -7,6 +7,7 @@ from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.audit.service import audit
+from app.core.reference_generator import generate_reference_code
 from app.models.residential import (
     ResidentMovement,
     Visitor,
@@ -54,7 +55,8 @@ class ResidentialService:
     def create_visitor(self, data: VisitorIn) -> Visitor:
         visitor = Visitor(
             **data.model_dump(),
-            facility_id=self.actor.facility_id
+            facility_id=self.actor.facility_id,
+            reference_code=generate_reference_code(self.db, self.actor.facility_id, "VISITOR")
         )
         self.db.add(visitor)
         self.db.commit()
@@ -78,7 +80,8 @@ class ResidentialService:
         incident = Incident(
             **data.model_dump(),
             facility_id=self.actor.facility_id,
-            reported_by_id=self.actor.id
+            reported_by_id=self.actor.id,
+            reference_code=generate_reference_code(self.db, self.actor.facility_id, "INCIDENT")
         )
         self.db.add(incident)
         self.db.commit()

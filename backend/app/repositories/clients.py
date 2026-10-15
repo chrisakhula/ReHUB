@@ -72,6 +72,7 @@ class ClientRepository(CareRepository):
             fields = [
                 getattr(model, field)
                 for field in (
+                    "reference_code",
                     "client_number",
                     "first_name",
                     "middle_name",

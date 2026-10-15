@@ -70,7 +70,7 @@ const resources: Resource[] = [
         permission: "pharmacy.dispense",
         path: () => "/pharmacy/movements",
         fields: [
-          text("batch_id", "Batch ID", true),
+          text("batch_id", "Batch Reference", true),
           choice("movement_type", "Movement", [
             "DISPENSE",
             "WARD_ISSUE",
@@ -102,7 +102,7 @@ const resources: Resource[] = [
         permission: "pharmacy.manage",
         path: () => "/pharmacy/counts",
         fields: [
-          text("batch_id", "Batch ID", true),
+          text("batch_id", "Batch Reference", true),
           number("counted_quantity", "Counted quantity", true, 0),
           reason,
         ],

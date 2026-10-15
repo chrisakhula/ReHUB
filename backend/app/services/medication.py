@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.audit.service import audit
 from app.core.permissions import aware
+from app.core.reference_generator import generate_reference_code
 from app.core.time import business_today
 from app.models.identity import User, utcnow
 from app.models.medication import (
@@ -65,11 +66,18 @@ class MedicationService:
         )
 
     def save_medication(self, data, record_id=None):
-        record = (
-            self.repo.require(Medication, record_id, lock=True)
-            if record_id
-            else self.attributed(Medication, data.model_dump())
-        )
+        if record_id:
+            record = self.repo.require(Medication, record_id, lock=True)
+        else:
+            record = self.attributed(
+                Medication,
+                {
+                    **data.model_dump(),
+                    "reference_code": generate_reference_code(
+                        self.db, self.actor.facility_id, "MEDICATION"
+                    ),
+                },
+            )
         if record_id:
             previous = {
                 key: getattr(record, key)
@@ -134,6 +142,9 @@ class MedicationService:
             Prescription,
             {
                 **data.model_dump(),
+                "reference_code": generate_reference_code(
+                    self.db, self.actor.facility_id, "PRESCRIPTION"
+                ),
                 "client_id": admission.client_id,
                 "generic_name": medication.generic_name,
                 "brand_name": medication.brand_name,
@@ -353,6 +364,9 @@ class MedicationService:
             MedicationAdministration,
             {
                 **data.model_dump(),
+                "reference_code": generate_reference_code(
+                    self.db, self.actor.facility_id, "EMAR"
+                ),
                 "client_id": record.client_id,
                 "admission_id": record.admission_id,
                 "prescription_version": record.version,

@@ -1,6 +1,7 @@
 """Schemas for billing, payments, and financial management."""
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Literal, Optional
 from uuid import UUID
 
@@ -129,3 +130,38 @@ class ReceiptOut(RecordBase):
     notes: str
     created_at: datetime
     updated_at: datetime
+
+
+class StkPushIn(BaseModel):
+    client_id: UUID
+    invoice_id: UUID
+    phone_number: str = Field(..., max_length=20)
+    amount: Decimal = Field(..., gt=0)
+
+
+class ManualAllocationIn(BaseModel):
+    invoice_id: UUID
+    notes: Optional[str] = ""
+
+
+class MpesaTransactionOut(RecordBase):
+    id: UUID
+    facility_id: UUID
+    transaction_reference: str
+    phone_number: str
+    amount: Decimal
+    timestamp: datetime
+    payer_id: Optional[UUID] = None
+    client_id: Optional[UUID] = None
+    invoice_id: Optional[UUID] = None
+    merchant_request_id: Optional[str] = None
+    checkout_request_id: Optional[str] = None
+    response_code: Optional[str] = None
+    customer_message: Optional[str] = None
+    status: str
+    reconciliation_status: str
+    reconciled_payment_id: Optional[UUID] = None
+    reconciled_by_id: Optional[UUID] = None
+    reconciled_at: Optional[datetime] = None
+    reconciliation_notes: Optional[str] = None
+

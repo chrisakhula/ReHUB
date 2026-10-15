@@ -22,6 +22,26 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from: str = "noreply@example.org"
     smtp_starttls: bool = True
+    redis_url: str = "redis://127.0.0.1:6379/0"
+
+    # M-Pesa Daraja Configuration
+    mpesa_environment: str = "sandbox"
+    mpesa_consumer_key: str = ""
+    mpesa_consumer_secret: str = ""
+    mpesa_shortcode: str = ""
+    mpesa_passkey: str = ""
+    mpesa_callback_url: str = ""
+    mpesa_timeout_url: str = ""
+    mpesa_result_url: str = ""
+
+    # SMS Provider Configuration
+    sms_provider: str = "disabled"  # disabled, africastalking, twilio, mock
+    sms_api_key: str = ""
+    sms_username: str = ""
+    sms_sender_id: str = "ReHUB"
+
+    # Observability & Monitoring
+    sentry_dsn: str = ""
 
     @model_validator(mode="after")
     def validate_security(self):

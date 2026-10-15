@@ -34,6 +34,7 @@ class ResidentMovement(Record, Base):
 class Visitor(Record, Base):
     __tablename__ = "residential_visitors"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     client_id: Mapped[UUID] = mapped_column(ForeignKey("clients.id"), index=True)
     name: Mapped[str] = mapped_column(String(255))
     relationship_to_client: Mapped[str] = mapped_column(String(100))
@@ -59,6 +60,7 @@ class VisitorLog(Record, Base):
 class Incident(Record, Base):
     __tablename__ = "residential_incidents"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     category: Mapped[str] = mapped_column(String(100)) # e.g. MEDICAL, BEHAVIORAL, SECURITY, FACILITY
     severity: Mapped[str] = mapped_column(String(50)) # LOW, MEDIUM, HIGH, CRITICAL
     description: Mapped[str] = mapped_column(Text)

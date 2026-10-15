@@ -44,6 +44,7 @@ class VisitorIn(RecordBase):
 
 class VisitorOut(VisitorIn):
     id: UUID
+    reference_code: str
     facility_id: UUID
     created_at: datetime
     updated_at: datetime
@@ -80,6 +81,7 @@ class IncidentIn(RecordBase):
 
 class IncidentOut(IncidentIn):
     id: UUID
+    reference_code: str
     facility_id: UUID
     reported_by_id: UUID
     closed_at: datetime | None = None

@@ -110,6 +110,7 @@ class IntakeDocument(FacilityRecord, Base):
 
 class Referral(FacilityRecord, Base):
     __tablename__ = "referrals"
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     client_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("clients.id"), index=True)
     referral_date: Mapped[date] = mapped_column(Date)
     source: Mapped[str] = mapped_column(String(40))
@@ -308,6 +309,6 @@ class BedAssignment(FacilityRecord, Base):
 class RecordNumber(Base):
     __tablename__ = "record_numbers"
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), primary_key=True)
-    kind: Mapped[str] = mapped_column(String(20), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(40), primary_key=True)
     year: Mapped[int] = mapped_column(Integer, primary_key=True)
     last_value: Mapped[int] = mapped_column(Integer, default=0)

@@ -19,6 +19,7 @@ from app.models.identity import Record
 class DischargePlan(Record, Base):
     __tablename__ = "discharge_plans"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     admission_id: Mapped[UUID] = mapped_column(ForeignKey("admissions.id"), index=True)
     
     # Mandatory readiness checks
@@ -48,6 +49,7 @@ class DischargePlan(Record, Base):
 class AftercareCase(Record, Base):
     __tablename__ = "discharge_aftercare_cases"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     client_id: Mapped[UUID] = mapped_column(ForeignKey("clients.id"), index=True)
     admission_id: Mapped[UUID | None] = mapped_column(ForeignKey("admissions.id"), nullable=True)
     assigned_staff_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))

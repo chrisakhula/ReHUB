@@ -30,6 +30,7 @@ class CareRecord(Record):
 
 class ClinicalEncounter(CareRecord, Base):
     __tablename__ = "clinical_encounters"
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     encounter_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     clinician_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     encounter_type: Mapped[str] = mapped_column(String(40), default="ROUTINE")
@@ -99,6 +100,7 @@ class VitalSign(CareRecord, Base):
 
 class MedicalOrder(CareRecord, Base):
     __tablename__ = "clinical_orders"
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     encounter_id: Mapped[UUID | None] = mapped_column(ForeignKey("clinical_encounters.id"))
     order_type: Mapped[str] = mapped_column(String(30))
     description: Mapped[str] = mapped_column(Text)
@@ -155,6 +157,7 @@ class ShiftHandover(Record, Base):
 
 class LaboratoryRequest(CareRecord, Base):
     __tablename__ = "clinical_lab_requests"
+    reference_code: Mapped[str] = mapped_column(String(50), index=True)
     encounter_id: Mapped[UUID | None] = mapped_column(ForeignKey("clinical_encounters.id"))
     test: Mapped[str] = mapped_column(String(200))
     indication: Mapped[str] = mapped_column(Text)
@@ -207,12 +210,35 @@ class CrisisAlert(Record, Base):
     __tablename__ = "clinical_crisis_alerts"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     client_id: Mapped[UUID | None] = mapped_column(ForeignKey("clients.id"), index=True)
+    admission_id: Mapped[UUID | None] = mapped_column(ForeignKey("admissions.id"), nullable=True, index=True)
+    alert_reference: Mapped[str] = mapped_column(String(50), nullable=True, unique=True, index=True)
     source_entity: Mapped[str] = mapped_column(String(50))
     source_entity_id: Mapped[str] = mapped_column(String(50))
+    trigger: Mapped[str] = mapped_column(String(100), default="CLINICAL_RISK")
     detected_keywords: Mapped[str] = mapped_column(String(500))
     text_snippet: Mapped[str] = mapped_column(Text)
-    severity: Mapped[str] = mapped_column(String(30), default="CRITICAL")
-    status: Mapped[str] = mapped_column(String(30), default="NEW")
+    severity: Mapped[str] = mapped_column(String(30), default="CRITICAL")  # CRITICAL, HIGH, MEDIUM, REVIEW_REQUIRED
+    status: Mapped[str] = mapped_column(String(30), default="NEW")  # DETECTED, NEW, ACKNOWLEDGED, UNDER_REVIEW, RESOLVED, ESCALATED
+    assigned_clinician_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     acknowledged_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
     acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    intervention: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_by_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    escalation_level: Mapped[int] = mapped_column(Integer, default=0)
+    escalation_history: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class CrisisEscalationPolicy(Record, Base):
+    __tablename__ = "clinical_crisis_escalation_policies"
+    facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    severity: Mapped[str] = mapped_column(String(30), default="CRITICAL")
+    tier_1_delay_minutes: Mapped[int] = mapped_column(Integer, default=5)  # Assigned clinician to Duty Clinician
+    tier_2_delay_minutes: Mapped[int] = mapped_column(Integer, default=10)  # Duty Clinician to Clinical Manager
+    notify_sms: Mapped[bool] = mapped_column(Boolean, default=True)
+    notify_email: Mapped[bool] = mapped_column(Boolean, default=True)
+    notify_in_app: Mapped[bool] = mapped_column(Boolean, default=True)
+
 

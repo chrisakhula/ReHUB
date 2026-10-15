@@ -1,8 +1,10 @@
 """Clinical, nursing and investigation APIs with distinct permission boundaries."""
 
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.audit.service import audit
@@ -307,18 +309,79 @@ def toxicology_trends(
     }
 
 
+class CrisisReviewIn(BaseModel):
+    response: str
+    intervention: str
+
+
+class CrisisResolveIn(BaseModel):
+    resolution: str
+
+
+class CrisisScanIn(BaseModel):
+    text: str
+    client_id: Optional[UUID] = None
+    admission_id: Optional[UUID] = None
+    source_entity: str = "ClinicalNote"
+    source_entity_id: str = "Unknown"
+
+
 @router.get("/crisis-alerts")
 def crisis_alerts(
     request: Request,
+    status: Optional[str] = None,
+    severity: Optional[str] = None,
     args=Depends(care_paging),
     db: Session = Depends(get_db, scope="function"),
     actor=Depends(require_permission("clinical.view")),
 ):
     from app.audit.service import audit
-    service = ClinicalService(db, request, actor)
-    rows, meta = service.repo.page(models.CrisisAlert, **args, status="NEW")
+    from sqlalchemy import select
+    from app.models.clinical import CrisisAlert
+
+    query = select(CrisisAlert).filter(CrisisAlert.facility_id == actor.facility_id)
+    if status:
+        query = query.filter(CrisisAlert.status == status)
+    else:
+        # Default: non-resolved
+        query = query.filter(CrisisAlert.status.in_(["NEW", "ESCALATED", "DETECTED", "ACKNOWLEDGED", "UNDER_REVIEW"]))
+
+    if severity:
+        query = query.filter(CrisisAlert.severity == severity)
+
+    query = query.order_by(CrisisAlert.created_at.desc())
+    items = list(db.scalars(query.offset(args.get("offset", 0)).limit(args.get("limit", 50))).all())
+    total = len(items)
+
     audit(db, request, "clinical.crisis_alerts_accessed", "crisis_alert", actor)
-    return {"items": [record_out(row) for row in rows], "meta": meta}
+    return {
+        "items": [
+            {
+                "id": str(r.id),
+                "alert_reference": r.alert_reference,
+                "client_id": str(r.client_id) if r.client_id else None,
+                "admission_id": str(r.admission_id) if r.admission_id else None,
+                "trigger": r.trigger,
+                "severity": r.severity,
+                "status": r.status,
+                "detected_keywords": r.detected_keywords,
+                "text_snippet": r.text_snippet,
+                "assigned_clinician_id": str(r.assigned_clinician_id) if r.assigned_clinician_id else None,
+                "acknowledged_by": str(r.acknowledged_by) if r.acknowledged_by else None,
+                "acknowledged_at": r.acknowledged_at.isoformat() if r.acknowledged_at else None,
+                "response": r.response,
+                "intervention": r.intervention,
+                "resolution": r.resolution,
+                "resolved_by_id": str(r.resolved_by_id) if r.resolved_by_id else None,
+                "resolved_at": r.resolved_at.isoformat() if r.resolved_at else None,
+                "escalation_level": r.escalation_level,
+                "escalation_history": r.escalation_history or [],
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in items
+        ],
+        "meta": {"limit": args.get("limit", 50), "offset": args.get("offset", 0), "total": total},
+    }
 
 
 @router.post("/crisis-alerts/{record_id}/acknowledge")
@@ -328,15 +391,84 @@ def acknowledge_crisis_alert(
     db: Session = Depends(get_db, scope="function"),
     actor=Depends(require_permission("clinical.create_note")),
 ):
-    from datetime import datetime
-    from app.core.time import EAT
+    from app.services.crisis import crisis_escalation_service
     from app.audit.service import audit
-    service = ClinicalService(db, request, actor)
-    alert = service.repo.require(models.CrisisAlert, record_id)
-    if alert.status == "NEW":
-        alert.status = "ACKNOWLEDGED"
-        alert.acknowledged_by = actor.id
-        alert.acknowledged_at = datetime.now(EAT)
+
+    try:
+        alert = crisis_escalation_service.acknowledge_alert(
+            db=db, alert_id=record_id, user_id=actor.id, note="Acknowledged via clinical dashboard"
+        )
         audit(db, request, "clinical.crisis_alert_acknowledged", "crisis_alert", actor, record_id)
-        db.commit()
-    return record_out(alert)
+        return {"id": str(alert.id), "status": alert.status, "alert_reference": alert.alert_reference}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/crisis-alerts/{record_id}/review")
+def review_crisis_alert(
+    record_id: UUID,
+    payload: CrisisReviewIn,
+    request: Request,
+    db: Session = Depends(get_db, scope="function"),
+    actor=Depends(require_permission("clinical.create_note")),
+):
+    from app.services.crisis import crisis_escalation_service
+    from app.audit.service import audit
+
+    try:
+        alert = crisis_escalation_service.start_review(
+            db=db,
+            alert_id=record_id,
+            user_id=actor.id,
+            response_summary=payload.response,
+            intervention_plan=payload.intervention,
+        )
+        audit(db, request, "clinical.crisis_alert_reviewed", "crisis_alert", actor, record_id)
+        return {"id": str(alert.id), "status": alert.status, "alert_reference": alert.alert_reference}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/crisis-alerts/{record_id}/resolve")
+def resolve_crisis_alert(
+    record_id: UUID,
+    payload: CrisisResolveIn,
+    request: Request,
+    db: Session = Depends(get_db, scope="function"),
+    actor=Depends(require_permission("clinical.create_note")),
+):
+    from app.services.crisis import crisis_escalation_service
+    from app.audit.service import audit
+
+    try:
+        alert = crisis_escalation_service.resolve_alert(
+            db=db, alert_id=record_id, user_id=actor.id, resolution_notes=payload.resolution
+        )
+        audit(db, request, "clinical.crisis_alert_resolved", "crisis_alert", actor, record_id)
+        return {"id": str(alert.id), "status": alert.status, "alert_reference": alert.alert_reference}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/crisis-alerts/scan-text")
+def scan_text_for_crisis_alerts(
+    payload: CrisisScanIn,
+    request: Request,
+    db: Session = Depends(get_db, scope="function"),
+    actor=Depends(require_permission("clinical.view")),
+):
+    from app.services.crisis import scan_text_for_crisis
+
+    matches = scan_text_for_crisis(
+        text=payload.text,
+        db=db,
+        facility_id=actor.facility_id,
+        client_id=payload.client_id,
+        admission_id=payload.admission_id,
+        source_entity=payload.source_entity,
+        source_entity_id=payload.source_entity_id,
+        assigned_clinician_id=actor.id,
+    )
+    db.commit()
+    return {"matches": matches, "count": len(matches)}
+

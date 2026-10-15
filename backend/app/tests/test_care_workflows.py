@@ -366,11 +366,10 @@ def prescription(clinical_client, admitted):
             "reorder_level": "10",
         },
     )
-    route = next(
-        row
-        for row in clinical_client.get("/api/v1/medication/routes").json()["items"]
-        if row["code"] == "oral"
-    )
+    routes = clinical_client.get("/api/v1/medication/routes").json()["items"]
+    route = next((row for row in routes if row["code"].lower() == "oral"), None)
+    if not route:
+        route = post(clinical_client, "/medication/routes", {"code": "oral", "name": "Oral", "active": True})
     now = utcnow()
     start = now
     rx = post(

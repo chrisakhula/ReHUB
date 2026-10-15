@@ -1,4 +1,6 @@
+import logging
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -20,6 +22,10 @@ from app.models.billing import (
 )
 from app.schemas.billing import InvoiceIn, PaymentIn
 from app.audit.service import audit
+from app.core.reference_generator import generate_reference_code
+from app.services.finance import FinanceLedgerService, PAYMENT_ACCOUNT_BY_METHOD
+
+logger = logging.getLogger("rehub.billing")
 
 
 class FinanceService:
@@ -39,12 +45,15 @@ class FinanceService:
         audit(self.db, self.request, action, entity.__class__.__name__, self.actor, getattr(entity, "id", None))
 
     def create_invoice(self, data: InvoiceIn) -> Invoice:
+        invoice_num = data.invoice_number or generate_reference_code(
+            self.db, self.actor.facility_id, "INVOICE"
+        )
         invoice = Invoice(
             facility_id=self.actor.facility_id,
             client_id=data.client_id,
             admission_id=data.admission_id,
             payer_id=data.payer_id,
-            invoice_number=data.invoice_number,
+            invoice_number=invoice_num,
             issue_date=data.issue_date,
             due_date=data.due_date,
             status=data.status,
@@ -131,16 +140,40 @@ class FinanceService:
         
         self.db.flush()
         self.event("billing.invoice_created", invoice)
+
+        # GL Posting: Dr Accounts Receivable (1200) / Cr Patient Service Revenue (4000)
+        if invoice.status in ("ISSUED", "PARTIAL", "PAID") and invoice.total_amount > 0:
+            try:
+                ledger = FinanceLedgerService(self.db, self.request, self.actor)
+                inv_total = Decimal(str(invoice.total_amount))
+                ledger.post_journal(
+                    entry_date=invoice.issue_date,
+                    reference=invoice.invoice_number,
+                    description=f"Invoice {invoice.invoice_number}",
+                    source_module="BILLING_INVOICE",
+                    source_id=str(invoice.id),
+                    posting_type="INVOICE",
+                    lines=[
+                        {"account_code": "1200", "debit": inv_total, "credit": 0},
+                        {"account_code": "4000", "debit": 0, "credit": inv_total},
+                    ],
+                )
+            except Exception as exc:
+                logger.warning("GL posting skipped for invoice %s: %s", invoice.invoice_number, exc)
+
         return invoice
 
     def record_payment(self, data: PaymentIn, invoice_allocations: dict[UUID, float] = None) -> Payment:
+        ref = data.transaction_reference or generate_reference_code(
+            self.db, self.actor.facility_id, "PAYMENT"
+        )
         payment = Payment(
             facility_id=self.actor.facility_id,
             payer_id=data.payer_id,
             client_id=data.client_id,
             amount=data.amount,
             payment_method=data.payment_method,
-            transaction_reference=data.transaction_reference,
+            transaction_reference=ref,
             payment_date=data.payment_date,
             notes=data.notes,
             status="COMPLETED",
@@ -150,6 +183,27 @@ class FinanceService:
         self.db.add(payment)
         self.db.flush()
         self.event("billing.payment_received", payment)
+
+        # GL Posting: Dr Cash / Bank / M-Pesa / Cr Accounts Receivable (1200)
+        try:
+            ledger = FinanceLedgerService(self.db, self.request, self.actor)
+            pay_acct_code = PAYMENT_ACCOUNT_BY_METHOD.get(data.payment_method.upper(), "1000")
+            pay_amt = Decimal(str(payment.amount))
+            entry_dt = payment.payment_date.date() if hasattr(payment.payment_date, "date") else payment.payment_date
+            ledger.post_journal(
+                entry_date=entry_dt,
+                reference=payment.transaction_reference or f"PAY-{str(payment.id)[:8]}",
+                description=f"Payment received via {payment.payment_method}",
+                source_module="BILLING_PAYMENT",
+                source_id=str(payment.id),
+                posting_type="PAYMENT",
+                lines=[
+                    {"account_code": pay_acct_code, "debit": pay_amt, "credit": 0},
+                    {"account_code": "1200", "debit": 0, "credit": pay_amt},
+                ],
+            )
+        except Exception as exc:
+            logger.warning("GL posting skipped for payment %s: %s", payment.id, exc)
 
         if invoice_allocations:
             for inv_id, alloc_amount in invoice_allocations.items():

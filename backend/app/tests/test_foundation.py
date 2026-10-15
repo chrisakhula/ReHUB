@@ -78,8 +78,13 @@ def test_idle_timeout(logged_in, db):
 
 
 def test_user_create_update_duplicate_and_revocation(logged_in, db):
-    roles = logged_in.get("/api/v1/roles?page_size=100").json()["items"]
-    read_only = next(r for r in roles if r["name"] == "Read Only User")
+    permission = db.scalar(select(Permission).where(Permission.code == "audit.view"))
+    role_res = logged_in.post(
+        "/api/v1/roles",
+        json={"name": "Sample Auditor", "description": "Audit reviewer", "permission_ids": [str(permission.id)], "reason": "Sample role setup"},
+    )
+    assert role_res.status_code == 201
+    read_only = role_res.json()
     payload = {
         "email": "sample@example.org",
         "full_name": "Sample Staff",
@@ -252,7 +257,7 @@ def test_audit_database_immutability(logged_in, db):
 
 
 def test_pagination_search_settings_and_departments(logged_in):
-    response = logged_in.get("/api/v1/users?page=1&page_size=1&q=Development")
+    response = logged_in.get("/api/v1/users?page=1&page_size=1&q=Kevin")
     assert response.json()["meta"]["total"] == 1
     assert logged_in.get("/api/v1/users?page_size=101").status_code == 422
     created = logged_in.post(

@@ -16,6 +16,8 @@ import { RolesPage } from "../modules/administration/RolesPage";
 import { DepartmentsPage } from "../modules/administration/DepartmentsPage";
 import { AuditPage } from "../modules/administration/AuditPage";
 import { SettingsPage } from "../modules/administration/SettingsPage";
+import { JobsPage } from "../modules/administration/JobsPage";
+import { ReadinessPage } from "../modules/administration/ReadinessPage";
 
 const ClientsPage = lazy(() =>
   import("../modules/clients/ClientsPage").then((module) => ({
@@ -221,6 +223,16 @@ export function AppRoutes() {
                 <Route
                   path="/administration/settings"
                   element={<SettingsPage />}
+                />
+              </Route>
+              <Route element={<PermissionGuard permission={["audit.view", "settings.manage"]} />}>
+                <Route
+                  path="/administration/jobs"
+                  element={<JobsPage />}
+                />
+                <Route
+                  path="/administration/readiness"
+                  element={<ReadinessPage />}
                 />
               </Route>
               <Route

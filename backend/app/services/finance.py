@@ -10,6 +10,8 @@ from fastapi import HTTPException, Request
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.config import get_settings
+from app.core.reference_generator import generate_reference_code
 from app.audit.service import audit
 from app.models.finance import (
     FinanceAccount,
@@ -275,10 +277,19 @@ class FinanceLedgerService:
         self.event("finance.fiscal_period_created", period, new={"name": period.name})
         return period
 
-    def set_period_status(self, period_id: UUID, status: str) -> FinanceFiscalPeriod:
+    def set_period_status(
+        self, period_id: UUID, status: str, reason: str = ""
+    ) -> FinanceFiscalPeriod:
         period = self.db.get(FinanceFiscalPeriod, period_id)
         if not period or period.facility_id != self.facility_id:
             raise HTTPException(404, "Fiscal period not found")
+        previous_status = period.status
+        if status == "OPEN" and previous_status in ("CLOSED", "LOCKED"):
+            if not reason or len(reason.strip()) < 10:
+                raise HTTPException(
+                    422,
+                    "Reopening a locked or closed fiscal period requires an explicit audit reason (minimum 10 characters).",
+                )
         period.status = status
         period.updated_by = self.actor.id
         if status == "LOCKED":
@@ -288,7 +299,17 @@ class FinanceLedgerService:
             period.closed_by = self.actor.id
             period.closed_at = utcnow()
         self.db.flush()
-        self.event("finance.fiscal_period_status_changed", period, new={"status": status})
+        action = (
+            "finance.fiscal_period_reopened"
+            if status == "OPEN" and previous_status in ("CLOSED", "LOCKED")
+            else "finance.fiscal_period_status_changed"
+        )
+        self.event(
+            action,
+            period,
+            new={"status": status, "previous_status": previous_status, "reason": reason},
+            reason=reason,
+        )
         return period
 
     def post_journal(
@@ -341,10 +362,11 @@ class FinanceLedgerService:
         if total_debit != total_credit:
             raise HTTPException(422, f"Journal is unbalanced: {total_debit} != {total_credit}")
 
+        ref = reference or generate_reference_code(self.db, self.facility_id, "JOURNAL")
         entry = FinanceJournalEntry(
             facility_id=self.facility_id,
             entry_date=entry_date,
-            reference=reference,
+            reference=ref,
             description=description,
             source_module=source_module,
             source_id=source_id,
@@ -400,6 +422,11 @@ class FinanceLedgerService:
         )
         if not journal:
             raise HTTPException(404, "Journal not found")
+        if journal.created_by == self.actor.id:
+            raise HTTPException(
+                403,
+                "Segregation of duties violation: The author of a journal entry cannot approve it.",
+            )
         if journal.status not in {"DRAFT", "SUBMITTED"}:
             raise HTTPException(409, f"Journal status is {journal.status}")
         self.validate_period(journal.entry_date)
@@ -467,6 +494,7 @@ class FinanceLedgerService:
         return category
 
     def create_expense(self, data: ExpenseVoucherIn) -> FinanceExpenseVoucher:
+        ref = data.reference or generate_reference_code(self.db, self.facility_id, "EXPENSE")
         voucher = FinanceExpenseVoucher(
             facility_id=self.facility_id,
             expense_category_id=data.expense_category_id,
@@ -474,7 +502,7 @@ class FinanceLedgerService:
             payment_method=data.payment_method,
             payment_account_id=data.payment_account_id,
             paid_to=data.paid_to,
-            reference=data.reference,
+            reference=ref,
             description=data.description,
             expense_date=data.expense_date,
             created_by=self.actor.id,
@@ -491,6 +519,26 @@ class FinanceLedgerService:
             raise HTTPException(404, "Expense voucher not found")
         if voucher.status == "APPROVED":
             raise HTTPException(409, "Expense voucher is already approved")
+        if voucher.created_by == self.actor.id:
+            raise HTTPException(
+                403,
+                "Segregation of duties violation: Creators cannot approve their own expense vouchers.",
+            )
+        senior_threshold = getattr(get_settings(), "SENIOR_EXPENSE_THRESHOLD_KES", Decimal("50000.00"))
+        if voucher.amount > senior_threshold:
+            user_perms = {p.code for p in getattr(self.actor, "permissions", [])}
+            user_roles = {r.name for r in getattr(self.actor, "roles", [])}
+            is_senior = (
+                "finance.configure" in user_perms
+                or "Senior Finance Officer" in user_roles
+                or "Medical Director" in user_roles
+                or "System Administrator" in user_roles
+            )
+            if not is_senior:
+                raise HTTPException(
+                    403,
+                    f"Expenses exceeding KSh {senior_threshold:,.2f} require senior finance authorization.",
+                )
         category = self.db.get(FinanceExpenseCategory, voucher.expense_category_id)
         payment_account = self.payment_account(voucher.payment_method, voucher.payment_account_id)
         self.post_journal(
@@ -527,10 +575,11 @@ class FinanceLedgerService:
         supplier = self.db.get(FinanceSupplier, data.supplier_id)
         if not supplier or supplier.facility_id != self.facility_id:
             raise HTTPException(422, "Supplier is not available")
+        inv_num = data.invoice_number or generate_reference_code(self.db, self.facility_id, "SUPPLIER_INVOICE")
         invoice = FinanceSupplierInvoice(
             facility_id=self.facility_id,
             supplier_id=data.supplier_id,
-            invoice_number=data.invoice_number,
+            invoice_number=inv_num,
             invoice_date=data.invoice_date,
             due_date=data.due_date,
             invoice_type=data.invoice_type,

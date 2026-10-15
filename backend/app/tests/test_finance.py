@@ -1,6 +1,8 @@
 import pytest
 import uuid
 from datetime import date
+from sqlalchemy import select
+from app.models.identity import User
 
 def post(client, url, json_data):
     response = client.post(f"/api/v1{url}", json=json_data)
@@ -30,7 +32,13 @@ def test_finance_account_creation(clinical_client):
     accounts = clinical_client.get("/api/v1/finance/accounts").json()
     assert any(a["code"] == account_code for a in accounts["items"])
 
-def test_finance_expense_and_journal(clinical_client):
+def test_finance_expense_and_journal(client, clinical_client, db):
+    # Ensure finance user can log in without mandatory password change
+    fin_user = db.scalar(select(User).where(User.email == "finance@example.org"))
+    if fin_user:
+        fin_user.force_password_change = False
+        db.commit()
+
     # Seed first to get default categories
     clinical_client.post("/api/v1/finance/seed")
     
@@ -52,12 +60,20 @@ def test_finance_expense_and_journal(clinical_client):
     assert expense["amount"] == 1500.50
     assert expense["status"] == "DRAFT"
     
-    # Approve expense
-    approved = post(clinical_client, f"/finance/expenses/{expense['id']}/approve", {})
+    # Verify segregation of duties: creator cannot approve own voucher
+    creator_res = clinical_client.post(f"/api/v1/finance/expenses/{expense['id']}/approve", json={})
+    assert creator_res.status_code == 403
+
+    # Distinct Finance Officer logs in and approves
+    login_res = client.post("/api/v1/auth/login", json={"email": "finance@example.org", "password": "ChangeMe!2026"})
+    assert login_res.status_code == 200
+    client.headers["X-CSRF-Token"] = client.cookies.get("csrf_token")
+
+    approved = post(client, f"/finance/expenses/{expense['id']}/approve", {})
     assert approved["status"] == "APPROVED"
     
     # Check if journal was created
-    journals = clinical_client.get("/api/v1/finance/journals").json()["items"]
+    journals = client.get("/api/v1/finance/journals").json()["items"]
     # The journal reference should match or contain the expense reference
     journal = next((j for j in journals if j["source_module"] == "EXPENSE"), None)
     assert journal is not None

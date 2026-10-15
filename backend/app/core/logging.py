@@ -11,6 +11,10 @@ class JsonFormatter(logging.Formatter):
                 "level": record.levelname,
                 "logger": record.name,
                 "event": record.getMessage(),
+                "request_id": getattr(record, "request_id", None),
+                "route": getattr(record, "route", None),
+                "status_code": getattr(record, "status_code", None),
+                "duration_ms": getattr(record, "duration_ms", None),
                 "exception_type": getattr(record, "exception_type", None),
             }
         )

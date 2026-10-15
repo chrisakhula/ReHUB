@@ -27,6 +27,7 @@ export const residentialResources: Resource[] = [
     title: "Incidents & Reporting",
     permission: "residential.view",
     columns: [
+      { key: "reference_code", label: "Incident Ref" },
       { key: "timestamp", label: "Date & Time" },
       { key: "category", label: "Category" },
       { key: "severity", label: "Severity" },

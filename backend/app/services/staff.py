@@ -4,6 +4,7 @@ from fastapi import Request
 from sqlalchemy.orm import Session
 
 from app.audit.service import audit
+from app.core.reference_generator import generate_reference_code
 from app.models.staff import StaffProfile, StaffShift
 from app.schemas.staff import StaffProfileIn, StaffShiftIn
 from app.models.identity import User
@@ -19,8 +20,11 @@ class StaffService:
         audit(self.db, self.request, action, entity.__class__.__name__, self.actor, getattr(entity, "id", None))
 
     def create_staff_profile(self, data: StaffProfileIn) -> StaffProfile:
+        dump = data.model_dump()
+        if not dump.get("employee_number"):
+            dump["employee_number"] = generate_reference_code(self.db, self.actor.facility_id, "STAFF")
         profile = StaffProfile(
-            **data.model_dump(),
+            **dump,
             facility_id=self.actor.facility_id
         )
         self.db.add(profile)

@@ -13,12 +13,18 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
+import uuid
 from app.core.database import Base
-from app.models.identity import Record
+from app.models.identity import utcnow
 
 
-class Supplier(Record, Base):
+class Supplier(Base):
     __tablename__ = "inventory_suppliers"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     name: Mapped[str] = mapped_column(String(200), unique=True)
     contact_person: Mapped[str] = mapped_column(String(100), default="")
@@ -28,8 +34,13 @@ class Supplier(Record, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
-class StoreItem(Record, Base):
+class StoreItem(Base):
     __tablename__ = "inventory_store_items"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     code: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(200))
@@ -41,20 +52,30 @@ class StoreItem(Record, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
-class PurchaseOrder(Record, Base):
+class PurchaseOrder(Base):
     __tablename__ = "inventory_purchase_orders"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     supplier_id: Mapped[UUID] = mapped_column(ForeignKey("inventory_suppliers.id"))
     order_number: Mapped[str] = mapped_column(String(100), unique=True)
-    order_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    order_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     status: Mapped[str] = mapped_column(String(50), default="DRAFT") # DRAFT, APPROVED, ORDERED, RECEIVED, CANCELLED
     total_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     requested_by_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
     approved_by_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
 
-class StockTransaction(Record, Base):
+class StockTransaction(Base):
     __tablename__ = "inventory_stock_transactions"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     item_id: Mapped[UUID] = mapped_column(ForeignKey("inventory_store_items.id"))
     transaction_type: Mapped[str] = mapped_column(String(50)) # RECEIPT, ISSUE, ADJUSTMENT, RETURN

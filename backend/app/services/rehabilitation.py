@@ -9,6 +9,7 @@ from sqlalchemy.inspection import inspect
 
 from app.audit.service import audit
 from app.core.permissions import aware
+from app.core.reference_generator import generate_reference_code
 from app.core.security import permission_codes
 from app.core.time import EAT, business_today
 from app.models.identity import utcnow
@@ -54,8 +55,14 @@ class RehabilitationService:
         audit(self.db, self.request, f"{entity}.accessed", entity, self.actor, record_id)
 
     def save(self, model, values):
+        val_copy = dict(values)
+        if hasattr(model, "reference_code") and "reference_code" not in val_copy:
+            kind = "TREATMENT_PLAN" if model.__name__ == "TreatmentPlan" else "ASSESSMENT"
+            val_copy["reference_code"] = generate_reference_code(
+                self.db, self.actor.facility_id, kind
+            )
         row = model(
-            **values,
+            **val_copy,
             facility_id=self.actor.facility_id,
             created_by=self.actor.id,
             updated_by=self.actor.id,

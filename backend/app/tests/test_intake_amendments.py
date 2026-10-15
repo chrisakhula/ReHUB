@@ -117,7 +117,9 @@ def test_intake_assignment_appears_without_case_profile(clinical_client, admitte
     admission = db.get(Admission, UUID(admitted["admission"]["id"]))
     admission.primary_case_manager_id = UUID(actor)
     db.commit()
-    response = clinical_client.get("/api/v1/rehabilitation/case-dashboard").json()
+    res = clinical_client.get("/api/v1/rehabilitation/case-dashboard")
+    assert res.status_code == 200, res.text
+    response = res.json()
     assert response["meta"]["total"] == 1
     assert response["items"][0]["case_profile_required"] is True
 
