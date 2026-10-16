@@ -367,9 +367,11 @@ def test_issued_invoice_immutability_and_credit_notes(db: Session, finance_env):
     assert approved_cn.status == "POSTED"
     assert approved_cn.journal_id is not None
 
-    # Check Invoice total amount adjusted: 10,000 - 2,000 = 8,000
+    # Check Invoice total amount is financially immutable: remains 10,000.00
     db.refresh(invoice)
-    assert invoice.total_amount == Decimal("8000.00")
+    assert invoice.total_amount == Decimal("10000.00")
+    # Remaining invoice balance is adjusted via credit note: 10,000 - 2,000 = 8,000
+    assert billing_manager.get_invoice_balance(invoice.id) == Decimal("8000.00")
 
     # Check GL Posting: Dr 4000 (Revenue) / Cr 1200 (AR) for 2,000
     journal = db.get(FinanceJournalEntry, approved_cn.journal_id)

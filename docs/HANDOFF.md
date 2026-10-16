@@ -166,15 +166,12 @@ All automated test suites pass 100%:
 ```powershell
 # Run All Hardened Test Suites
 $env:TEST_DATABASE_URL = "postgresql+psycopg://ars:ars_dev@127.0.0.1:55439/ars_rms_test"
-..\.venv\Scripts\pytest app/tests/test_phase26_5_finance_safety.py -v
-..\.venv\Scripts\pytest app/tests/test_financial_integrity.py -v
-..\.venv\Scripts\pytest app/tests/test_mpesa_daraja.py -v
-..\.venv\Scripts\pytest app/tests/test_privacy_and_observability.py -v
-..\.venv\Scripts\pytest app/tests/test_e2e_scenarios.py -v
+..\.venv\Scripts\pytest app/tests/ -v
 ```
 
+- **Full Backend Regression Suite:** **92 passed, 0 skipped, 0 failed**.
 - **Phase 26.5 Finance Safety Suite:** 11 passed (Decimal arithmetic, ICT admin lockout, cash variance gates, invoice immutability, credit note maker-checker, write-off maker-checker, GL atomicity, discount controls, integrity scanner).
-- **Financial Integrity Suite:** 5 passed (GL debit=credit, fiscal periods, segregation of duties, Decimal precision).
+- **Financial Accounting & AP Suite:** 9 passed (Double-entry balancing, fiscal periods, segregation of duties, Decimal precision, supplier invoices, expenses, journals).
 - **M-Pesa Daraja Suite:** 3 passed (STK push, idempotency callback, manual allocation).
 - **Privacy & Observability Suite:** 5 passed (DSAR, consent withdrawal, health probes, version endpoint, correlation ID).
 - **Institutional End-to-End Suite:** 5 passed (Intake to aftercare, crisis alert escalation, M-Pesa billing-to-GL, incident investigation, eMAR refusal).

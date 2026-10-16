@@ -387,7 +387,7 @@ def create_expense(
     actor=Depends(require_permission("finance.edit")),
 ):
     row = service(db, request, actor).create_expense(data)
-    return {"id": str(row.id), "amount": float(row.amount), "status": row.status}
+    return {"id": str(row.id), "reference": row.reference, "amount": float(row.amount), "status": row.status}
 
 
 @router.post("/expenses/{voucher_id}/approve")
@@ -398,7 +398,7 @@ def approve_expense(
     actor=Depends(require_permission("finance.approve")),
 ):
     row = service(db, request, actor).approve_expense(voucher_id)
-    return {"id": str(row.id), "status": row.status}
+    return {"id": str(row.id), "reference": row.reference, "status": row.status}
 
 
 @router.get("/suppliers")

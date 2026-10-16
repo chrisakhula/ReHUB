@@ -265,6 +265,25 @@ class FinanceService:
                 invoice.status = "PARTIAL"
             self.event("billing.invoice_status_updated", invoice)
 
+    def get_invoice_balance(self, invoice_id: UUID) -> Decimal:
+        """Calculate net remaining balance on invoice (total_amount - payments - credit_notes - write_offs)."""
+        invoice = self.db.get(Invoice, invoice_id)
+        if not invoice:
+            raise HTTPException(404, "Invoice not found")
+        raw_allocs = self.db.query(func.sum(PaymentAllocation.amount)).filter(PaymentAllocation.invoice_id == invoice.id).scalar()
+        total_allocated = money(raw_allocs) if raw_allocs is not None else Decimal("0.00")
+        raw_cns = self.db.query(func.sum(CreditNote.amount)).filter(
+            CreditNote.invoice_id == invoice.id,
+            CreditNote.status.in_(("POSTED", "APPROVED")),
+        ).scalar()
+        total_credits = money(raw_cns) if raw_cns is not None else Decimal("0.00")
+        raw_wos = self.db.query(func.sum(WriteOff.amount)).filter(
+            WriteOff.invoice_id == invoice.id,
+            WriteOff.status.in_(("POSTED", "APPROVED")),
+        ).scalar()
+        total_wos = money(raw_wos) if raw_wos is not None else Decimal("0.00")
+        return max(Decimal("0.00"), invoice.total_amount - total_allocated - total_credits - total_wos)
+
     # --- Phase 26.5: Credit Note Workflow ---
 
     def create_credit_note(self, data: CreditNoteIn) -> CreditNote:
@@ -357,13 +376,17 @@ class FinanceService:
         cn.status = "POSTED"
         cn.updated_by = self.actor.id
 
-        # Safely reduce invoice total amount and update status
-        invoice.total_amount = max(Decimal("0.00"), invoice.total_amount - cn.amount)
+        # Update invoice status without mutating original issued total_amount
         raw_allocs = self.db.query(func.sum(PaymentAllocation.amount)).filter(PaymentAllocation.invoice_id == invoice.id).scalar()
         total_allocated = money(raw_allocs) if raw_allocs is not None else Decimal("0.00")
-        if total_allocated >= invoice.total_amount:
+        raw_cns = self.db.query(func.sum(CreditNote.amount)).filter(
+            CreditNote.invoice_id == invoice.id,
+            CreditNote.status.in_(("POSTED", "APPROVED")),
+        ).scalar()
+        total_credits = money(raw_cns) if raw_cns is not None else Decimal("0.00")
+        if total_allocated + total_credits >= invoice.total_amount:
             invoice.status = "PAID"
-        elif total_allocated > Decimal("0.00"):
+        elif total_allocated + total_credits > Decimal("0.00"):
             invoice.status = "PARTIAL"
 
         self.db.flush()

@@ -212,11 +212,11 @@ class BillingGlIntegrityService:
                         )
                     )
 
-        # 3. Scan Write-Offs (posted)
+        # 3. Scan Write-Offs (posted or approved)
         writeoffs = self.db.scalars(
             select(WriteOff).filter(
                 WriteOff.facility_id == self.facility_id,
-                WriteOff.status == "POSTED",
+                WriteOff.status.in_(("APPROVED", "POSTED")),
             )
         ).all()
 
@@ -280,11 +280,11 @@ class BillingGlIntegrityService:
                         )
                     )
 
-        # 4. Scan Credit Notes (posted)
+        # 4. Scan Credit Notes (posted or approved)
         credit_notes = self.db.scalars(
             select(CreditNote).filter(
                 CreditNote.facility_id == self.facility_id,
-                CreditNote.status == "POSTED",
+                CreditNote.status.in_(("APPROVED", "POSTED")),
             )
         ).all()
 

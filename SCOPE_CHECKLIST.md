@@ -198,7 +198,9 @@
 - [x] Dual-control Bad Debt Write-Off workflow (`PENDING_APPROVAL` -> `APPROVED`), independent approver gate, senior authorization threshold, and atomic GL posting (Dr 6000 / Cr 1200).
 - [x] Pre-issuance pricing discount approval thresholds (> 10% requires supervisory sign-off).
 - [x] Strictly atomic billing and GL posting boundaries with zero swallowed exceptions; propagation of `FinancialPostingError`.
-- [x] Operational Billing-to-GL Integrity Diagnostic Service (`GET /api/v1/finance/integrity/billing-gl`) checking Invoices, Payments, Write-offs, and Credit Notes against General Ledger journals.
+- [x] Operational Billing-to-GL Integrity Diagnostic Service (`GET /api/v1/finance/integrity/billing-gl`) verified against non-zero pre-production financial lifecycle dataset (24 records scanned, 0 missing journals, 0 duplicate journals, 1 historical mutation anomaly flagged non-destructively).
+- [x] Standardized authoritative Chart of Accounts for cash variances: `6600 Cash shortage expense` (Dr Shortage / Cr Cash 1000) and `4300 Cash overage income` (Dr Cash 1000 / Cr Overage 4300).
+- [x] Activated and verified Accounts Payable test suite: `test_supplier_invoice` passing 100% with seeded chart of accounts.
 - [x] Frontend Finance Approval Workspace queue and Billing-GL Integrity panel.
 
 ---

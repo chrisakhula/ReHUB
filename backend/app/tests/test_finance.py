@@ -29,7 +29,7 @@ def test_finance_account_creation(clinical_client):
     assert account["code"] == account_code
     assert account["type"] == "ASSET"
 
-    accounts = clinical_client.get("/api/v1/finance/accounts").json()
+    accounts = clinical_client.get(f"/api/v1/finance/accounts?q={account_code}").json()
     assert any(a["code"] == account_code for a in accounts["items"])
 
 def test_finance_expense_and_journal(client, clinical_client, db):
@@ -47,13 +47,14 @@ def test_finance_expense_and_journal(client, clinical_client, db):
         pytest.skip("No expense categories found")
     
     cat = categories[0]
+    exp_ref = f"EXP-{uuid.uuid4().hex[:6]}"
     
     expense = post(clinical_client, "/finance/expenses", {
         "expense_category_id": cat["id"],
         "amount": 1500.50,
         "payment_method": "CASH",
         "paid_to": "Test Vendor",
-        "reference": f"EXP-{uuid.uuid4().hex[:6]}",
+        "reference": exp_ref,
         "description": "Test expense",
         "expense_date": date.today().isoformat()
     })
@@ -72,14 +73,16 @@ def test_finance_expense_and_journal(client, clinical_client, db):
     approved = post(client, f"/finance/expenses/{expense['id']}/approve", {})
     assert approved["status"] == "APPROVED"
     
-    # Check if journal was created
-    journals = client.get("/api/v1/finance/journals").json()["items"]
-    # The journal reference should match or contain the expense reference
+    # Check if journal was created (filter by reference code to handle pagination)
+    journals = client.get(f"/api/v1/finance/journals?q={exp_ref}").json()["items"]
     journal = next((j for j in journals if j["source_module"] == "EXPENSE"), None)
     assert journal is not None
     assert journal["status"] == "POSTED"
     
 def test_supplier_invoice(clinical_client):
+    # Seed default accounts first
+    clinical_client.post("/api/v1/finance/seed")
+
     # Create supplier
     supplier = post(clinical_client, "/finance/suppliers", {
         "name": f"Test Supplier {uuid.uuid4().hex[:4]}",

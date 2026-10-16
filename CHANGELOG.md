@@ -24,8 +24,10 @@ This release remediates 7 critical financial control and accounting integrity de
 - **Cash Reconciliation Supervisory Gate (P0-3):**
   - Converted cash reconciliation into a multi-stage gated workflow. Zero-variance counts transition to `BALANCED`; non-zero variances transition to `VARIANCE_REVIEW` and require independent supervisor review before General Ledger posting.
   - Enforced strict maker-checker validation preventing cashiers from approving their own shortages or overages.
+  - Standardized authoritative Chart of Accounts for cash variances: `6600 Cash shortage expense` (Dr Shortage / Cr Cash 1000) and `4300 Cash overage income` (Dr Cash 1000 / Cr Overage 4300).
 - **Invoice Immutability & Credit Notes (P0-4):**
   - Enforced financial immutability for issued invoices (`ISSUED`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`); direct mutation of totals, tax, discounts, or line items is strictly prohibited.
+  - Preserved original issued `total_amount` during Credit Note lifecycle, updating net remaining balance dynamically (`total_amount - credits - allocations`).
   - Activated the Credit Note workflow with structured reasons (`BILLING_ERROR`, `DUPLICATE_CHARGE`, `SERVICE_NOT_DELIVERED`, `APPROVED_DISCOUNT`, `EARLY_DISCHARGE_ADJUSTMENT`, `OTHER`), maker-checker authorization (`billing.credit_note.approve`), and atomic GL posting (`Dr 4000 Patient Service Revenue / Cr 1200 Accounts Receivable`).
 - **Atomic Billing & GL Posting (P0-5):**
   - Removed all silent exception swallowing (`except Exception: pass`, unhandled `logger.warning`) across billing and ledger posting pathways.
@@ -39,6 +41,9 @@ This release remediates 7 critical financial control and accounting integrity de
   - Enforced supervisory approval for pre-issuance discounts exceeding 10%.
 - **Billing-to-GL Integrity Diagnostic Service:**
   - Added `app.services.integrity.BillingGlIntegrityService` and diagnostic endpoint `GET /api/v1/finance/integrity/billing-gl` (`finance.audit`) verifying invoice totals, payment allocations, credit notes, and write-offs against General Ledger journals with zero silent auto-corrections.
+  - Verified scanner against a non-zero pre-production financial lifecycle dataset (24 records checked, 23 matched, 0 missing, 0 duplicates, 1 historical mutation anomaly flagged non-destructively).
+- **Accounts Payable Verification:**
+  - Activated and resolved supplier invoice test suite (`test_supplier_invoice` passing 100%).
 - **Frontend Operational Workspaces:**
   - Integrated `FinanceApprovalWorkspace` (unified queue for expenses, cash variances, credit notes, and write-offs) and `FinanceIntegrityPanel` into the finance portal.
 

@@ -64,8 +64,8 @@ Supervisor / Finance Manager Investigation
 Approved / Rejected by Independent Supervisor
          ↓ (On Approval)
 Atomic GL Posting:
-  • Shortage: Dr Cash Shortage Expense (6050) / Cr Cash on Hand (1000)
-  • Overage:  Dr Cash on Hand (1000) / Cr Cash Overage Income (4200)
+  • Shortage: Dr Cash Shortage Expense (6600) / Cr Cash on Hand (1000)
+  • Overage:  Dr Cash on Hand (1000) / Cr Cash Overage Income (4300)
          ↓
 Status: POSTED
 ```
