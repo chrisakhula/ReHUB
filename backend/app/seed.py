@@ -97,6 +97,17 @@ ALL_PERMISSIONS = {
     "billing.credit_note.approve": "Review and approve issued credit notes",
     "billing.writeoff.request": "Request bad debt write-offs for uncollectible invoices",
     "billing.writeoff.approve": "Review and approve bad debt write-offs",
+    "billing.financial_assessment.create": "Create and update pre-admission financial assessments",
+    "billing.estimate.create": "Create and edit quotations and cost estimates",
+    "billing.estimate.issue": "Issue quotations and cost estimates to clients/payers",
+    "billing.agreement.create": "Create and revise financial agreements",
+    "billing.agreement.approve": "Approve and activate financial agreements",
+    "billing.payment_plan.create": "Create and configure client payment plans",
+    "billing.payment_plan.approve": "Approve client installment payment plans",
+    "billing.refund.request": "Request client credit balance refunds",
+    "billing.refund.approve": "Review, approve, and execute client refunds",
+    "billing.discharge_clearance": "Perform discharge financial review and issue clearances",
+    "billing.export": "Export billing and client financial ledger reports",
     "finance.view": "View general ledger, chart of accounts and trial balance",
     "finance.edit": "Create journal entries, vouchers and supplier invoices",
     "finance.approve": "Approve financial vouchers, expenses, variances and write-offs",
@@ -107,6 +118,11 @@ ALL_PERMISSIONS = {
     "finance.reopen_period": "Reopen locked fiscal accounting periods",
     "finance.audit": "Audit financial journals and inspect billing-to-GL integrity",
     "finance.export": "Export financial reports and data",
+    "finance.print": "Print official financial documents and receipts",
+    "finance.email_document": "Email financial documents and statements",
+    "resident_funds.view": "View resident pocket money accounts and statements",
+    "resident_funds.deposit": "Receive and record resident pocket money deposits",
+    "resident_funds.withdraw": "Process and record resident pocket money withdrawals and purchases",
     # Inventory, Staff & Compliance
     "inventory.view": "View general stores items and stock counts",
     "inventory.edit": "Create purchase requisitions, POs and stock issues",
@@ -169,7 +185,11 @@ FINANCE_OFFICER_PERMISSIONS = [
     "client.view", "admission.view",
     "billing.view", "billing.edit", "billing.issue", "billing.collect_payment",
     "billing.credit_note.create", "billing.writeoff.request",
+    "billing.financial_assessment.create", "billing.estimate.create", "billing.estimate.issue",
+    "billing.agreement.create", "billing.payment_plan.create", "billing.refund.request", "billing.export",
     "finance.view", "finance.edit", "finance.approve", "finance.reports", "finance.reconcile", "finance.export",
+    "finance.print", "finance.email_document",
+    "resident_funds.view", "resident_funds.deposit", "resident_funds.withdraw",
 ]
 
 FINANCE_MANAGER_PERMISSIONS = [
@@ -177,8 +197,15 @@ FINANCE_MANAGER_PERMISSIONS = [
     "billing.view", "billing.edit", "billing.issue", "billing.collect_payment",
     "billing.credit_note.create", "billing.credit_note.approve",
     "billing.writeoff.request", "billing.writeoff.approve",
+    "billing.financial_assessment.create", "billing.estimate.create", "billing.estimate.issue",
+    "billing.agreement.create", "billing.agreement.approve",
+    "billing.payment_plan.create", "billing.payment_plan.approve",
+    "billing.refund.request", "billing.refund.approve",
+    "billing.discharge_clearance", "billing.export",
     "finance.view", "finance.edit", "finance.approve", "finance.configure", "finance.reports",
     "finance.reconcile", "finance.close_period", "finance.reopen_period", "finance.audit", "finance.export",
+    "finance.print", "finance.email_document",
+    "resident_funds.view", "resident_funds.deposit", "resident_funds.withdraw",
 ]
 
 FINANCE_PERMISSIONS = FINANCE_OFFICER_PERMISSIONS

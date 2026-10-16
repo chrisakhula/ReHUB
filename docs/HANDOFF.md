@@ -2,9 +2,9 @@
 
 > **System Name:** ReHUB / ARS RMS (Rehabilitation Management System)  
 > **Jurisdiction / Context:** Kenyan Residential Addiction & Mental-Health Facilities  
-> **Version:** 1.0.0-rc2  
+> **Version:** 1.0.0-rc3  
 > **Date:** October 2026  
-> **Status:** Production-Ready Institution System (Phases 1–26 + Phase 26.5 Finance Safety Remediation Complete)  
+> **Status:** Production-Ready Institution System (Phases 1–26 + Phase 26.5 Finance Safety Remediation + Phase 26.6 Client Finance Lifecycle & Exports Complete)  
 > **Primary Repository Root:** `c:\Users\Cleophas\OneDrive\Desktop\ReHUB`  
 
 ---
@@ -169,7 +169,8 @@ $env:TEST_DATABASE_URL = "postgresql+psycopg://ars:ars_dev@127.0.0.1:55439/ars_r
 ..\.venv\Scripts\pytest app/tests/ -v
 ```
 
-- **Full Backend Regression Suite:** **92 passed, 0 skipped, 0 failed**.
+- **Full Backend Regression Suite:** **106 passed, 0 skipped, 0 failed**.
+- **Phase 26.6 Client Finance Lifecycle Suite:** 14 passed (Financial assessments, quotations, agreement conversion, versioning, package inclusions, consumption tracking, recurring billing, duplicate charge protection, split-payer validation, client financial account, payment plans, refunds GL, resident funds pocket money GL, discharge clearance, branded PDF generation, spreadsheet exports and audit).
 - **Phase 26.5 Finance Safety Suite:** 11 passed (Decimal arithmetic, ICT admin lockout, cash variance gates, invoice immutability, credit note maker-checker, write-off maker-checker, GL atomicity, discount controls, integrity scanner).
 - **Financial Accounting & AP Suite:** 9 passed (Double-entry balancing, fiscal periods, segregation of duties, Decimal precision, supplier invoices, expenses, journals).
 - **M-Pesa Daraja Suite:** 3 passed (STK push, idempotency callback, manual allocation).

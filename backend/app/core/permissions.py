@@ -63,3 +63,14 @@ def require_permission(code: str):
         return user
 
     return dependency
+
+
+def require_any_permission(*codes: str):
+    def dependency(user: User = Depends(current_user)) -> User:
+        user_perms = permission_codes(user)
+        if not any(c in user_perms for c in codes):
+            raise HTTPException(403, "You do not have permission for this action")
+        return user
+
+    return dependency
+

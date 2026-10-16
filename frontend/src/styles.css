@@ -1362,3 +1362,69 @@ code {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ==========================================================================
+   Print Stylesheet (Phase 26.6 Section 43)
+   ========================================================================== */
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  .desktop-sidebar,
+  .topbar,
+  .app-sidebar,
+  .nav-tabs,
+  .btn,
+  .table-toolbar,
+  .table-footer,
+  .skip-link,
+  .phase-notice,
+  .filter-controls,
+  .search-controls,
+  .modal-footer {
+    display: none !important;
+  }
+
+  .app-body,
+  .main-content,
+  .container,
+  .container-fluid {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .card,
+  .table-responsive {
+    box-shadow: none !important;
+    border: 1px solid #cccccc !important;
+  }
+
+  .table {
+    --bs-table-bg: transparent !important;
+    --bs-table-color: #000000 !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .table th,
+  .table td {
+    border: 1px solid #dddddd !important;
+    padding: 6px 10px !important;
+  }
+
+  .document-preview-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: auto;
+  }
+}

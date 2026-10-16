@@ -78,6 +78,10 @@ class FinanceJournalEntry(Record, Base):
         back_populates="journal_entry", cascade="all, delete-orphan"
     )
 
+    @property
+    def posted(self) -> bool:
+        return self.status == "POSTED"
+
 
 class FinanceJournalLine(Record, Base):
     __tablename__ = "finance_journal_lines"

@@ -48,6 +48,14 @@ REFERENCE_CONFIG = {
     "CREDIT_NOTE": {"prefix": "CN", "digits": 4, "use_year": True},
     "WRITE_OFF": {"prefix": "WO", "digits": 4, "use_year": True},
     "CASH_RECONCILIATION": {"prefix": "CRN", "digits": 4, "use_year": True},
+    "FINANCIAL_ASSESSMENT": {"prefix": "FAS", "digits": 5, "use_year": True},
+    "ESTIMATE": {"prefix": "EST", "digits": 5, "use_year": True},
+    "FINANCIAL_AGREEMENT": {"prefix": "FAG", "digits": 5, "use_year": True},
+    "PAYMENT_PLAN": {"prefix": "PPL", "digits": 5, "use_year": True},
+    "REFUND": {"prefix": "RF", "digits": 5, "use_year": True},
+    "RESIDENT_FUND": {"prefix": "RFA", "digits": 5, "use_year": True},
+    "DISCHARGE_CLEARANCE": {"prefix": "CLR", "digits": 5, "use_year": True},
+    "SPONSOR": {"prefix": "SPN", "digits": 5, "use_year": True},
 }
 
 

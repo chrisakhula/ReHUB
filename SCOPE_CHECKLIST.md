@@ -203,13 +203,33 @@
 - [x] Activated and verified Accounts Payable test suite: `test_supplier_invoice` passing 100% with seeded chart of accounts.
 - [x] Frontend Finance Approval Workspace queue and Billing-GL Integrity panel.
 
+### Phase 26.6: End-to-End Client Finance Lifecycle, Financial Documents & Exports
+- [x] Pre-admission Financial Assessment workflow (`FAS-YYYY-NNNNN`) tracking payer types, guarantor details, estimated stay, and deposit terms without clinical leakage.
+- [x] Commercial Quotations & Cost Estimates (`EST-YYYY-NNNNN`) with line-item categorization, tax/discounts, subtotal/total calculations, and guaranteed zero GL impact.
+- [x] Quotation Conversion workflow: Accepted estimates seamlessly convert into formal admission-linked Financial Agreements (`FAG-YYYY-NNNNN v1`).
+- [x] Financial Agreement Versioning (`v1`, `v2`): Revisions preserve complete historical lineage, track revision reason and authorization, and enforce maker-checker segregation.
+- [x] Programme Package Billing Engine: Inclusions categorized as `INCLUDED`, `LIMITED_QUANTITY`, `DISCOUNTED`, `SEPARATELY_BILLABLE` with automatic consumption tracking and quota-exceeded extra charges.
+- [x] Automated Recurring Billing Schedules: Daily/weekly/monthly recurring charges with target-date idempotency, admission-scoping, and auto-cessation upon discharge.
+- [x] Cross-Module Billable Activity Integration: Source module deduplication preventing duplicate charges from pharmacy, lab, clinical, or residential extras.
+- [x] Split-Payer Financial Architecture: Invoice payer allocations with percentage/amount validation blocking over-allocation (> 100%).
+- [x] Sponsor Records (`SPN-YYYY-NNNNN`) & Sponsor Statements consolidating client balances across sponsored admissions with clinical privacy masking.
+- [x] Client Financial Account Subledger: Canonical real-time balances for charges, credits, payments, refunds, write-offs, outstanding balance, credit balance, and overdue amounts.
+- [x] Structured Payment Plans (`PPL-YYYY-NNNNN`) with installment schedules and status tracking.
+- [x] Dual-Control Client Refund Workflow (`RF-YYYY-NNNNN`) with source-based GL posting (`2200 Client Deposits Liability` vs `4000 Programme Revenue`).
+- [x] Custodial Resident Pocket Money Subledger (`RFA-YYYY-NNNNN`): Trust account tracking under GL `2200`, strictly non-negative balance checks, and atomic GL journals.
+- [x] Discharge Financial Clearance (`CLR-YYYY-NNNNN`): Three independent statuses (Clinical Discharge, Financial Clearance, Administrative Closure) supporting `CLEARED`, `PAYMENT_PLAN`, and `AUTHORIZED_EXCEPTION`.
+- [x] Server-Side Financial Document Engine (`FinancialDocumentPdfBuilder`): Generates branded A4/A5 PDFs for all 12 official commercial and accounting documents.
+- [x] Structured Spreadsheet Exporters (`FinancialSpreadsheetExporter`): Server-side CSV and XLSX exports for all core reports with mandatory `BillingExportAudit` logging.
+- [x] Frontend Client Finance Workspace: Live balance cards, transaction subledger, PDF download triggers, browser `@media print` layout, and spreadsheet export modal.
+- [x] 106 backend tests passing (0 skipped, 0 failed); 0 TypeScript errors on frontend production build.
+
 ---
 
 ## 2. Production Acceptance Gates
 
 | Gate | Status | Requirement & Validation Condition |
 |---|:---:|---|
-| **Database Migrations** | `[x]` | Single migration head (`vv1234567890`), zero schema drift, verified upgrade/downgrade. |
+| **Database Migrations** | `[x]` | Single migration head (`ww1234567890`), zero schema drift, verified upgrade/downgrade. |
 | **RBAC Security Audit** | `[x]` | Total isolation of IT Admin from clinical and financial approval data; least-privilege role boundaries tested. |
 | **Audit Immutability** | `[x]` | PostgreSQL triggers successfully reject `UPDATE`, `DELETE`, and `TRUNCATE` operations on `audit_events`. |
 | **Financial Balance Integrity**| `[x]` | General Ledger rejects unbalanced journals; non-destructive reversal entries enforced; strict Decimal arithmetic. |

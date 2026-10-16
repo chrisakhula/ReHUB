@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0-rc3] - 2026-10-16
+
+### Milestone: Phase 26.6 — End-to-End Client Finance Lifecycle, Financial Documents & Exports
+
+This release completes the rehabilitation-specific client financial journey on top of the hardened Phase 26.5 General Ledger core, introducing commercial workflows, versioned agreements, package consumption tracking, split-payer billing, resident pocket money liability subledger, branded server-side PDF generation, and structured spreadsheet exports:
+
+### Added & Implemented
+- **Pre-Admission Financial Assessment (`FAS-YYYY-NNNNN`):** Structured commercial assessment capturing primary/secondary payers, sponsors, estimated stay, and deposit rules without clinical leakage.
+- **Quotations / Cost Estimates (`EST-YYYY-NNNNN`):** Commercial cost estimates with itemized categories, subtotals, totals, and zero General Ledger impact.
+- **Quotation-to-Agreement Conversion:** Seamlessly converts accepted estimates into admission-linked Financial Agreements (`FAG-YYYY-NNNNN v1`).
+- **Financial Agreement Versioning (`v1`, `v2`):** Non-destructive revision tracking preserving historical admission contracts, revision reasons, and maker-checker segregation.
+- **Programme Package Consumption Engine:** Multi-tier package inclusions (`INCLUDED`, `LIMITED_QUANTITY`, `DISCOUNTED`, `SEPARATELY_BILLABLE`) tracking allowed, used, remaining quotas and generating extra charges upon quota exhaustion.
+- **Automated Recurring Billing:** Daily, weekly, and monthly recurring billing engine with date-level idempotency, admission-scoping, and auto-cessation upon client discharge.
+- **Split-Payer Financial Architecture:** `InvoicePayerAllocation` supporting split responsibility (percentage or amount) with strict validation preventing over-allocation (> 100%).
+- **Sponsor Ledger & Consolidated Statements (`SPN-YYYY-NNNNN`):** Consolidated financial statements for sponsoring foundations/churches/employers with zero clinical narrative leakage.
+- **Client Financial Account Subledger:** Real-time canonical calculation of charges, credits, payments, refunds, write-offs, outstanding balance, credit balance, and overdue amounts.
+- **Structured Payment Plans (`PPL-YYYY-NNNNN`):** Multi-installment repayment schedules with due dates, payment status tracking, and maker-checker approval.
+- **Dual-Control Client Refunds (`RF-YYYY-NNNNN`):** Segregation-of-duties protected refund requests with dynamic GL source routing (Dr `2200 Client Deposits Liability` or Dr `4000 Programme Revenue` / Cr Cash/Bank/M-Pesa).
+- **Resident Funds Pocket Money Subledger (`RFA-YYYY-NNNNN`):** Custodial trust accounts under GL `2200`, strictly non-negative balance enforcement, and atomic GL journals.
+- **Discharge Financial Clearance (`CLR-YYYY-NNNNN`):** Independent three-tier separation of Clinical Discharge, Financial Clearance (`CLEARED`, `PAYMENT_PLAN`, `AUTHORIZED_EXCEPTION`, `REFUND_DUE`), and Administrative Closure.
+- **Server-Side Financial Document Engine:** Branded A4/A5 PDF generation (`FinancialDocumentPdfBuilder`) for Estimates, Agreements, Invoices, Receipts, Statements, Clearances, and Resident Funds.
+- **Structured Report Spreadsheet Exporters:** Reusable CSV & XLSX exports with mandatory `BillingExportAudit` audit logging.
+- **Frontend Client Finance Workspace & Print Engine:** Neumorphic real-time balance metrics, statement subledger, PDF downloads, `@media print` layout, and expanded Billing Workspace resources.
+- **Database & Test Suite Verification:** Alembic single head `ww1234567890`; 106 automated backend tests passing (0 skipped, 0 failed); 0 TypeScript errors on frontend production build.
+
+---
+
 ## [1.0.0-rc2] - 2026-10-16
 
 ### Milestone: Phase 26.5 — Finance Safety, Accounting Integrity & Control Remediation
