@@ -206,14 +206,22 @@ class FinanceCashReconciliation(Record, Base):
     __tablename__ = "finance_cash_reconciliations"
 
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    reference_code: Mapped[str | None] = mapped_column(String(50), unique=True, index=True, nullable=True)
     period_date: Mapped[date] = mapped_column(Date, index=True)
     cashier_name: Mapped[str] = mapped_column(String(150), default="")
+    cashier_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     opening_cash: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0)
     expected_cash: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     counted_cash: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     variance: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0)
-    status: Mapped[str] = mapped_column(String(20), default="POSTED", index=True)
-    reviewed_by: Mapped[UUID | None] = mapped_column(Uuid)
+    variance_type: Mapped[str | None] = mapped_column(String(20), nullable=True) # SHORTAGE, OVERAGE, BALANCED
+    status: Mapped[str] = mapped_column(String(20), default="VARIANCE_REVIEW", index=True) # BALANCED, VARIANCE_REVIEW, APPROVED, POSTED, REJECTED
+    reviewed_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    review_notes: Mapped[str] = mapped_column(Text, default="")
+    approved_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    journal_id: Mapped[UUID | None] = mapped_column(ForeignKey("finance_journal_entries.id"), nullable=True)
     notes: Mapped[str] = mapped_column(Text, default="")
 
 

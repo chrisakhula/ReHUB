@@ -91,14 +91,21 @@ ALL_PERMISSIONS = {
     # Billing & Finance
     "billing.view": "View invoices, fee catalogues and client statements",
     "billing.edit": "Create invoices, record payments, and issue adjustments",
+    "billing.issue": "Finalize and issue billing invoices",
     "billing.collect_payment": "Initiate and process client payments (e.g., M-Pesa STK push)",
+    "billing.credit_note.create": "Create draft credit notes for invoice adjustments",
+    "billing.credit_note.approve": "Review and approve issued credit notes",
+    "billing.writeoff.request": "Request bad debt write-offs for uncollectible invoices",
+    "billing.writeoff.approve": "Review and approve bad debt write-offs",
     "finance.view": "View general ledger, chart of accounts and trial balance",
     "finance.edit": "Create journal entries, vouchers and supplier invoices",
-    "finance.approve": "Approve financial vouchers, expenses and write-offs",
+    "finance.approve": "Approve financial vouchers, expenses, variances and write-offs",
     "finance.configure": "Configure fiscal periods and account mappings",
     "finance.reports": "Generate financial statements (P&L, Balance Sheet)",
     "finance.reconcile": "Reconcile payments and bank/M-Pesa statements",
     "finance.close_period": "Lock and close accounting fiscal periods",
+    "finance.reopen_period": "Reopen locked fiscal accounting periods",
+    "finance.audit": "Audit financial journals and inspect billing-to-GL integrity",
     "finance.export": "Export financial reports and data",
     # Inventory, Staff & Compliance
     "inventory.view": "View general stores items and stock counts",
@@ -158,11 +165,23 @@ RECEPTION_PERMISSIONS = [
     "residential.view", "residential.edit", "residential.assign"
 ]
 
-FINANCE_PERMISSIONS = [
-    "client.view", "admission.view", "billing.view", "billing.edit", "billing.collect_payment",
-    "finance.view", "finance.edit", "finance.approve", "finance.configure", "finance.reports",
-    "finance.reconcile", "finance.close_period", "finance.export"
+FINANCE_OFFICER_PERMISSIONS = [
+    "client.view", "admission.view",
+    "billing.view", "billing.edit", "billing.issue", "billing.collect_payment",
+    "billing.credit_note.create", "billing.writeoff.request",
+    "finance.view", "finance.edit", "finance.approve", "finance.reports", "finance.reconcile", "finance.export",
 ]
+
+FINANCE_MANAGER_PERMISSIONS = [
+    "client.view", "admission.view",
+    "billing.view", "billing.edit", "billing.issue", "billing.collect_payment",
+    "billing.credit_note.create", "billing.credit_note.approve",
+    "billing.writeoff.request", "billing.writeoff.approve",
+    "finance.view", "finance.edit", "finance.approve", "finance.configure", "finance.reports",
+    "finance.reconcile", "finance.close_period", "finance.reopen_period", "finance.audit", "finance.export",
+]
+
+FINANCE_PERMISSIONS = FINANCE_OFFICER_PERMISSIONS
 
 SYSTEM_INTEGRATION_PERMISSIONS = [
     "billing.view", "billing.edit", "billing.collect_payment",
@@ -226,7 +245,8 @@ def seed(db: Session, development: bool = False):
         ("Nurse", "Nursing Officer / eMAR Administrator", NURSE_PERMISSIONS),
         ("Pharmacist", "Pharmacy Superintendent", PHARMACIST_PERMISSIONS),
         ("Receptionist", "Client Ingestion & Records Clerk", RECEPTION_PERMISSIONS),
-        ("Finance Officer", "Billing & General Ledger Accountant", FINANCE_PERMISSIONS),
+        ("Finance Officer", "Billing & General Ledger Accountant", FINANCE_OFFICER_PERMISSIONS),
+        ("Finance Manager", "Financial Approvals, Fiscal Controls & Management Accounting", FINANCE_MANAGER_PERMISSIONS),
         ("System Integration", "Non-human integration identity for automated callbacks and background jobs", SYSTEM_INTEGRATION_PERMISSIONS),
     ]
 
@@ -293,6 +313,7 @@ def seed(db: Session, development: bool = False):
             ("pharmacy@example.org", "David Kiprop", "Pharmacy", "Pharmacist"),
             ("reception@example.org", "Faith Mutua", "Administration", "Receptionist"),
             ("finance@example.org", "Peter Kamau", "Finance", "Finance Officer"),
+            ("financemanager@example.org", "Grace Wambui", "Finance", "Finance Manager"),
         ]
 
         for email, full_name, dept_name, role_name in dev_accounts:

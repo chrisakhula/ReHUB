@@ -2,9 +2,9 @@
 
 > **System Name:** ReHUB / ARS RMS (Rehabilitation Management System)  
 > **Jurisdiction / Context:** Kenyan Residential Addiction & Mental-Health Facilities  
-> **Version:** 1.0.0-rc1  
+> **Version:** 1.0.0-rc2  
 > **Date:** October 2026  
-> **Status:** Production-Ready Institution System (Phases 1–10 + Phases 11–25 Hardened, Automated & Verified)  
+> **Status:** Production-Ready Institution System (Phases 1–26 + Phase 26.5 Finance Safety Remediation Complete)  
 > **Primary Repository Root:** `c:\Users\Cleophas\OneDrive\Desktop\ReHUB`  
 
 ---
@@ -15,10 +15,17 @@
 
 Unlike generic hospital management software, ReHUB is architected around the distinct longitudinal rehabilitation journey:
 - **Single Permanent Master Client Record** preserved across readmissions and relapse cycles.
-- **Strict Least-Privilege Role-Based Access Control (RBAC)** ensuring total operational separation between IT/System Administrators, Clinicians, Counsellors/Psychotherapists, Nurses, and Finance Officers.
+- **Strict Least-Privilege Role-Based Access Control (RBAC)** ensuring total operational separation between IT/System Administrators, Clinicians, Counsellors/Psychotherapists, Nurses, and Finance Officers. System Administrators and ICT Administrators are structurally barred from approving financial vouchers, cash variances, credit notes, or write-offs.
 - **Immutable Append-Only Audit Logging** enforced by PostgreSQL triggers, rendering unauthorized modifications, deletions, or truncations structurally impossible.
 - **Kenyan Statutory & Regulatory Alignment**, including compliance frameworks for **NACADA**, the **Office of the Data Protection Commissioner (ODPC / Data Protection Act 2019)**, Ministry of Health / County Public Health, and the Pharmacy and Poisons Board.
-- **Enterprise Financial Rigor**, featuring a double-entry general ledger engine, chart of accounts, M-Pesa reconciliation structures, locked fiscal periods, and cashier drawer tracking.
+- **Enterprise Financial Rigor & Safety (Phase 26.5)**:
+  - Strict double-entry general ledger engine utilizing canonical `Decimal` arithmetic exclusively (`NUMERIC(14, 2)`).
+  - Cash reconciliation supervisor gate preventing cashiers from self-authorizing cash variances.
+  - Immutable issued invoices protected by formal maker-checker Credit Notes (`billing.credit_note.approve`).
+  - Two-stage maker-checker Bad Debt Write-Off workflow (`billing.writeoff.approve`).
+  - Strictly atomic billing and GL posting boundaries preventing orphaned billing transactions (`FinancialPostingError`).
+  - Operational Billing-to-GL Integrity Diagnostic Service (`GET /api/v1/finance/integrity/billing-gl`).
+  - Dedicated architecture documentation: `docs/finance/FINANCE_CONTROL_REMEDIATION.md`, `docs/finance/FINANCIAL_APPROVAL_MATRIX.md`, and `docs/finance/BILLING_GL_INTEGRITY.md`.
 - **Automated Background Operations**, driven by Redis, Celery worker daemons, and Celery Beat scheduled tasks for eMAR rounds, overdue dose detection, crisis escalations, batch expiry alerts, and aftercare follow-up milestones.
 
 ---
@@ -159,11 +166,15 @@ All automated test suites pass 100%:
 ```powershell
 # Run All Hardened Test Suites
 $env:TEST_DATABASE_URL = "postgresql+psycopg://ars:ars_dev@127.0.0.1:55439/ars_rms_test"
+..\.venv\Scripts\pytest app/tests/test_phase26_5_finance_safety.py -v
 ..\.venv\Scripts\pytest app/tests/test_financial_integrity.py -v
+..\.venv\Scripts\pytest app/tests/test_mpesa_daraja.py -v
 ..\.venv\Scripts\pytest app/tests/test_privacy_and_observability.py -v
 ..\.venv\Scripts\pytest app/tests/test_e2e_scenarios.py -v
 ```
 
+- **Phase 26.5 Finance Safety Suite:** 11 passed (Decimal arithmetic, ICT admin lockout, cash variance gates, invoice immutability, credit note maker-checker, write-off maker-checker, GL atomicity, discount controls, integrity scanner).
 - **Financial Integrity Suite:** 5 passed (GL debit=credit, fiscal periods, segregation of duties, Decimal precision).
+- **M-Pesa Daraja Suite:** 3 passed (STK push, idempotency callback, manual allocation).
 - **Privacy & Observability Suite:** 5 passed (DSAR, consent withdrawal, health probes, version endpoint, correlation ID).
 - **Institutional End-to-End Suite:** 5 passed (Intake to aftercare, crisis alert escalation, M-Pesa billing-to-GL, incident investigation, eMAR refusal).

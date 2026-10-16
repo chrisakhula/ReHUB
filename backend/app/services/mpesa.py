@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.audit.service import audit
 from app.core.config import get_settings
+from app.core.exceptions import FinancialPostingError
 from app.core.system_actor import get_system_actor
 from app.models.billing import (
     Invoice,
@@ -40,10 +41,11 @@ def normalize_phone_number(phone: str) -> str:
 
 
 class MpesaService:
-    def __init__(self, db: Session, actor=None, request=None):
+    def __init__(self, db: Session, actor=None, request=None, facility_id: Optional[UUID] = None):
         self.db = db
         self.actor = actor
         self.request = request
+        self.facility_id = facility_id or (actor.facility_id if actor else None)
         self.settings = get_settings()
 
     def _get_access_token(self) -> str:
@@ -72,18 +74,26 @@ class MpesaService:
 
     def initiate_stk_push(
         self,
-        facility_id: UUID,
-        client_id: UUID,
-        invoice_id: UUID,
-        phone_number: str,
-        amount: Decimal,
+        facility_id: Optional[UUID] = None,
+        client_id: Optional[UUID] = None,
+        invoice_id: Optional[UUID] = None,
+        phone_number: str = "",
+        amount: Optional[Decimal] = None,
     ) -> MpesaTransaction:
         """Initiate Daraja STK Push with pre-call transaction recording."""
+        effective_facility_id = facility_id or self.facility_id
+        if not effective_facility_id:
+            raise HTTPException(400, "Facility ID is required for M-Pesa STK push")
+        if not invoice_id:
+            raise HTTPException(400, "Invoice ID is required for M-Pesa STK push")
+        if amount is None or amount <= Decimal("0.00"):
+            raise HTTPException(400, "A valid positive amount is required for M-Pesa STK push")
+
         # 1. Validate invoice
         invoice = self.db.scalar(
             select(Invoice).where(
                 Invoice.id == invoice_id,
-                Invoice.facility_id == facility_id,
+                Invoice.facility_id == effective_facility_id,
             )
         )
         if not invoice:
@@ -109,7 +119,7 @@ class MpesaService:
 
         # 2. Pre-create transaction record before calling external service
         tx = MpesaTransaction(
-            facility_id=facility_id,
+            facility_id=effective_facility_id,
             client_id=client_id,
             invoice_id=invoice_id,
             payer_id=invoice.payer_id,
@@ -388,7 +398,9 @@ class MpesaService:
                     ],
                 )
             except Exception as e:
+                self.db.rollback()
                 logger.error("Failed to post journal entry for M-Pesa payment: %s", e)
+                raise FinancialPostingError(f"Accounting posting failed for M-Pesa payment: {e}")
         else:
             tx.reconciliation_status = "UNMATCHED"
 
@@ -481,7 +493,9 @@ class MpesaService:
                 ],
             )
         except Exception as e:
+            self.db.rollback()
             logger.error("Failed to post journal entry for manual allocation: %s", e)
+            raise FinancialPostingError(f"Accounting posting failed for manual allocation: {e}")
 
         self.db.commit()
         if self.request:

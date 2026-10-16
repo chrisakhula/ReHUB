@@ -188,16 +188,30 @@
 - [x] Global unified search API (`GET /api/v1/search/quick`) querying across clients, admissions, prescriptions, medications, invoices, staff, incidents, and inventory with RBAC enforcement.
 - [x] Frontend Neumorphic `GlobalQuickSearch` component integrated into institutional topbar (`Ctrl + K` shortcut, instant debounced dropdown, keyboard navigation, categorized badges).
 
+### Phase 26.5: Finance Safety, Accounting Integrity & Control Remediation
+- [x] Canonical `Decimal` monetary standard (`app.core.money`) eliminating floating-point rounding errors across billing and GL.
+- [x] Full PostgreSQL `NUMERIC` column audit with zero allowed `FLOAT`/`DOUBLE PRECISION` types.
+- [x] Decoupled technical administration from financial authority: stripped financial approvals from System Administrator and Super Administrator via forward migration `vv1234567890`.
+- [x] Cash reconciliation supervisor gate: zero variance auto-balances (`BALANCED`), non-zero variance requires independent supervisor review (`VARIANCE_REVIEW` -> `POSTED`).
+- [x] Enforced immutability of issued invoices (`ISSUED`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`); direct mutation blocked.
+- [x] Activated Credit Note workflow with structured reasons, maker-checker authorization (`billing.credit_note.approve`), and atomic GL posting (Dr 4000 / Cr 1200).
+- [x] Dual-control Bad Debt Write-Off workflow (`PENDING_APPROVAL` -> `APPROVED`), independent approver gate, senior authorization threshold, and atomic GL posting (Dr 6000 / Cr 1200).
+- [x] Pre-issuance pricing discount approval thresholds (> 10% requires supervisory sign-off).
+- [x] Strictly atomic billing and GL posting boundaries with zero swallowed exceptions; propagation of `FinancialPostingError`.
+- [x] Operational Billing-to-GL Integrity Diagnostic Service (`GET /api/v1/finance/integrity/billing-gl`) checking Invoices, Payments, Write-offs, and Credit Notes against General Ledger journals.
+- [x] Frontend Finance Approval Workspace queue and Billing-GL Integrity panel.
+
 ---
 
 ## 2. Production Acceptance Gates
 
 | Gate | Status | Requirement & Validation Condition |
 |---|:---:|---|
-| **Database Migrations** | `[x]` | Single migration head (`tt5678901234`), zero schema drift, verified upgrade/downgrade. |
-| **RBAC Security Audit** | `[x]` | Total isolation of IT Admin from clinical data; least-privilege role boundaries tested. |
+| **Database Migrations** | `[x]` | Single migration head (`vv1234567890`), zero schema drift, verified upgrade/downgrade. |
+| **RBAC Security Audit** | `[x]` | Total isolation of IT Admin from clinical and financial approval data; least-privilege role boundaries tested. |
 | **Audit Immutability** | `[x]` | PostgreSQL triggers successfully reject `UPDATE`, `DELETE`, and `TRUNCATE` operations on `audit_events`. |
-| **Financial Balance Integrity**| `[x]` | General Ledger rejects unbalanced journals; non-destructive reversal entries enforced. |
+| **Financial Balance Integrity**| `[x]` | General Ledger rejects unbalanced journals; non-destructive reversal entries enforced; strict Decimal arithmetic. |
+| **Financial Segregation of Duties** | `[x]` | System Admin cannot approve expenses; cashiers cannot self-approve cash variances; write-offs and credit notes require independent checkers. |
 | **Container & Nginx Ingress** | `[x]` | Docker Compose builds cleanly; Nginx rate limiting, security headers, and reverse proxy active. |
 | **Clinical Scales Sign-Off** | `[~]` | Medical Director / Clinical Board formal sign-off in `docs/CLINICAL_CONFIGURATION_APPROVAL.md`. |
 | **M-Pesa Live Production Keys**| `[~]` | Live Safaricom Daraja Consumer Key, Secret, Shortcode, and Passkey provisioned into `.env`. |

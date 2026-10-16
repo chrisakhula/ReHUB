@@ -310,6 +310,27 @@ export const financeResources: Resource[] = [
       { name: "counted_cash", label: "Counted cash", type: "number", required: true },
       { name: "notes", label: "Notes", type: "textarea" },
     ],
+    statusOptions: ["BALANCED", "VARIANCE_REVIEW", "POSTED", "REJECTED"],
+    actions: [
+      {
+        label: "Approve Variance",
+        permission: "finance.approve",
+        path: (record) => `/finance/cash-reconciliations/${record.id}/approve`,
+        fields: [
+          { name: "approval_notes", label: "Approval Notes / Investigation Summary", type: "textarea" },
+        ],
+        visible: (record) => record.status === "VARIANCE_REVIEW",
+      },
+      {
+        label: "Reject Variance",
+        permission: "finance.approve",
+        path: (record) => `/finance/cash-reconciliations/${record.id}/reject`,
+        fields: [
+          { name: "review_notes", label: "Rejection Reason", type: "textarea", required: true },
+        ],
+        visible: (record) => record.status === "VARIANCE_REVIEW",
+      },
+    ],
   },
   {
     path: "/finance/payment-reconciliations",

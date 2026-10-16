@@ -46,6 +46,11 @@ def finance_setup(db: Session):
         facility_id=facility.id,
         active=True,
     )
+    perm_app = db.scalar(select(Permission).where(Permission.code == "finance.approve"))
+    if not perm_app:
+        perm_app = Permission(id=uuid4(), code="finance.approve", description="Approve finance")
+        db.add(perm_app)
+    approver.permissions.append(perm_app)
     db.add(approver)
 
     # User 3: Senior Finance Director

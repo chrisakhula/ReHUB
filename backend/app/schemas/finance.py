@@ -132,6 +132,10 @@ class CashReconciliationIn(RecordBase):
     notes: str = Field("", max_length=2000)
 
 
+class CashReconciliationApproveIn(RecordBase):
+    review_notes: str = Field("", max_length=1000)
+
+
 class PaymentReconciliationIn(RecordBase):
     method: str = Field(..., max_length=50)
     period_date: date

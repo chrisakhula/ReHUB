@@ -5,6 +5,8 @@ import { useAuth } from "../../auth/AuthProvider";
 import { ErrorNotice, PageHeader } from "../../components/Common";
 import { ResourcePanel } from "../care/ResourcePanel";
 import { FinanceReportsPanel } from "./FinanceReportsPanel";
+import { FinanceApprovalWorkspace } from "./FinanceApprovalWorkspace";
+import { FinanceIntegrityPanel } from "./FinanceIntegrityPanel";
 import { financeResources } from "./resources";
 
 export function FinancePage() {
@@ -15,6 +17,11 @@ export function FinancePage() {
     onSuccess: () => cache.invalidateQueries(),
   });
   const visible = financeResources.filter((resource) => auth.can(resource.permission));
+  const canApprove =
+    auth.can("finance.approve") ||
+    auth.can("billing.credit_note.approve") ||
+    auth.can("billing.writeoff.approve");
+  const canAudit = auth.can("finance.audit");
 
   return (
     <>
@@ -48,7 +55,12 @@ export function FinancePage() {
           Finance defaults checked and seeded where needed.
         </Alert>
       )}
-      <Tabs defaultActiveKey={visible[0]?.path ?? "reports"} className="mb-4" mountOnEnter unmountOnExit>
+      <Tabs defaultActiveKey={canApprove ? "approvals" : (visible[0]?.path ?? "reports")} className="mb-4" mountOnEnter unmountOnExit>
+        {canApprove && (
+          <Tab eventKey="approvals" title="Approval Queue">
+            <FinanceApprovalWorkspace />
+          </Tab>
+        )}
         {visible.map((resource) => (
           <Tab eventKey={resource.path} title={resource.title} key={resource.path}>
             <ResourcePanel resource={resource} />
@@ -59,8 +71,13 @@ export function FinancePage() {
             <FinanceReportsPanel />
           </Tab>
         )}
+        {canAudit && (
+          <Tab eventKey="integrity" title="Billing-GL Integrity">
+            <FinanceIntegrityPanel />
+          </Tab>
+        )}
       </Tabs>
-      {visible.length === 0 && !auth.can("finance.reports") && (
+      {visible.length === 0 && !auth.can("finance.reports") && !canApprove && !canAudit && (
         <p>No finance modules are enabled for this account.</p>
       )}
     </>

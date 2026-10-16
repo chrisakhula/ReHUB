@@ -45,6 +45,9 @@ REFERENCE_CONFIG = {
     "DISCHARGE": {"prefix": "DIS", "digits": 4, "use_year": True},
     "AFTERCARE": {"prefix": "AFC", "digits": 4, "use_year": True},
     "VISITOR": {"prefix": "VIS", "digits": 4, "use_year": True},
+    "CREDIT_NOTE": {"prefix": "CN", "digits": 4, "use_year": True},
+    "WRITE_OFF": {"prefix": "WO", "digits": 4, "use_year": True},
+    "CASH_RECONCILIATION": {"prefix": "CRN", "digits": 4, "use_year": True},
 }
 
 

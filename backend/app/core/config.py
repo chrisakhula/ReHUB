@@ -1,3 +1,4 @@
+from decimal import Decimal
 from functools import lru_cache
 
 from pydantic import model_validator
@@ -8,6 +9,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
     database_url: str
     secret_key: str = ""
+    finance_expense_senior_approval_threshold: Decimal = Decimal("50000.00")
+    cash_variance_manager_threshold: Decimal = Decimal("5000.00")
+    billing_discount_senior_approval_threshold_percent: Decimal = Decimal("10.00")
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     session_idle_minutes: int = 30

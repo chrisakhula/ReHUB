@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0-rc2] - 2026-10-16
+
+### Milestone: Phase 26.5 — Finance Safety, Accounting Integrity & Control Remediation
+
+This release remediates 7 critical financial control and accounting integrity defects identified during the comprehensive read-only finance audit:
+
+### Changed & Hardened
+- **Monetary Arithmetic (P0-1):**
+  - Replaced all floating-point arithmetic with canonical `Decimal` quantization (`app.core.money`, `MONEY_QUANTUM = Decimal("0.01")`, `ROUND_HALF_UP`).
+  - Audited all financial database columns; verified PostgreSQL `NUMERIC` types across invoices, line items, payments, allocations, vouchers, journal lines, and write-offs.
+- **Segregation of Duties & RBAC (P0-2):**
+  - Revoked all financial approval and configuration permissions (`finance.approve`, `finance.close_period`, `finance.reopen_period`, `finance.reconcile`, `billing.credit_note.approve`) from `System Administrator` and `Super Administrator` via forward migration `vv1234567890`.
+  - Enforced explicit technical administrator lockout in backend expense approvals.
+  - Implemented configurable senior financial approval threshold (`finance_expense_senior_approval_threshold = 50000.00`).
+- **Cash Reconciliation Supervisory Gate (P0-3):**
+  - Converted cash reconciliation into a multi-stage gated workflow. Zero-variance counts transition to `BALANCED`; non-zero variances transition to `VARIANCE_REVIEW` and require independent supervisor review before General Ledger posting.
+  - Enforced strict maker-checker validation preventing cashiers from approving their own shortages or overages.
+- **Invoice Immutability & Credit Notes (P0-4):**
+  - Enforced financial immutability for issued invoices (`ISSUED`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`); direct mutation of totals, tax, discounts, or line items is strictly prohibited.
+  - Activated the Credit Note workflow with structured reasons (`BILLING_ERROR`, `DUPLICATE_CHARGE`, `SERVICE_NOT_DELIVERED`, `APPROVED_DISCOUNT`, `EARLY_DISCHARGE_ADJUSTMENT`, `OTHER`), maker-checker authorization (`billing.credit_note.approve`), and atomic GL posting (`Dr 4000 Patient Service Revenue / Cr 1200 Accounts Receivable`).
+- **Atomic Billing & GL Posting (P0-5):**
+  - Removed all silent exception swallowing (`except Exception: pass`, unhandled `logger.warning`) across billing and ledger posting pathways.
+  - Enforced single database transaction boundaries for invoice issuance, payment allocations, credit notes, write-offs, and cash variances.
+  - Introduced `FinancialPostingError` (HTTP 422) ensuring transactions roll back cleanly without partial financial state.
+- **Bad Debt Write-Off Maker-Checker (P0-6):**
+  - Replaced single-step write-offs with a two-stage maker-checker request workflow (`PENDING_APPROVAL` -> `APPROVED`).
+  - Prohibited requesters from self-approving write-offs; enforced senior management authorization for amounts > KES 50,000.00; and made GL posting atomic (`Dr 6000 Bad Debt Expense / Cr 1200 Accounts Receivable`).
+- **Discounts & Billing Adjustment Controls (P0-7):**
+  - Separated pre-issuance pricing discounts from post-issuance balance reductions (requiring credit notes).
+  - Enforced supervisory approval for pre-issuance discounts exceeding 10%.
+- **Billing-to-GL Integrity Diagnostic Service:**
+  - Added `app.services.integrity.BillingGlIntegrityService` and diagnostic endpoint `GET /api/v1/finance/integrity/billing-gl` (`finance.audit`) verifying invoice totals, payment allocations, credit notes, and write-offs against General Ledger journals with zero silent auto-corrections.
+- **Frontend Operational Workspaces:**
+  - Integrated `FinanceApprovalWorkspace` (unified queue for expenses, cash variances, credit notes, and write-offs) and `FinanceIntegrityPanel` into the finance portal.
+
+---
+
 ## [1.0.0-rc1] - 2026-10-12
 
 ### Milestone: Production Hardening, Automation, Integrations & Institutional Go-Live Readiness

@@ -77,5 +77,99 @@ export const billingResources: Resource[] = [
       { name: "category", label: "Category", type: "text", required: true },
       { name: "description", label: "Description", type: "textarea" }
     ]
-  }
+  },
+  {
+    path: "/billing/credit-notes",
+    title: "Credit Notes",
+    permission: "billing.view",
+    writePermission: "billing.credit_note.create",
+    columns: [
+      { key: "credit_note_number", label: "CN #" },
+      { key: "invoice_id", label: "Invoice ID" },
+      { key: "amount", label: "Amount" },
+      { key: "reason_code", label: "Reason Code" },
+      { key: "status", label: "Status" },
+      { key: "created_at", label: "Date" },
+    ],
+    fields: [
+      { name: "invoice_id", label: "Invoice ID", type: "text", required: true },
+      { name: "amount", label: "Amount (KES)", type: "number", required: true },
+      {
+        name: "reason_code",
+        label: "Reason Code",
+        type: "select",
+        options: [
+          "BILLING_ERROR",
+          "DUPLICATE_CHARGE",
+          "SERVICE_NOT_DELIVERED",
+          "APPROVED_DISCOUNT",
+          "EARLY_DISCHARGE_ADJUSTMENT",
+          "OTHER",
+        ],
+        required: true,
+      },
+      { name: "reason", label: "Explanation / Notes", type: "textarea" },
+    ],
+    statusOptions: ["DRAFT", "ISSUED", "REJECTED"],
+    actions: [
+      {
+        label: "Approve Credit Note",
+        permission: "billing.credit_note.approve",
+        path: (record) => `/billing/credit-notes/${record.id}/approve`,
+        fields: [
+          { name: "approval_notes", label: "Approval Notes", type: "textarea" },
+        ],
+        visible: (record) => record.status === "DRAFT",
+      },
+      {
+        label: "Reject Credit Note",
+        permission: "billing.credit_note.approve",
+        path: (record) => `/billing/credit-notes/${record.id}/reject`,
+        fields: [
+          { name: "approval_notes", label: "Rejection Reason", type: "textarea", required: true },
+        ],
+        visible: (record) => record.status === "DRAFT",
+      },
+    ],
+  },
+  {
+    path: "/billing/writeoffs",
+    title: "Bad Debt Write-Offs",
+    permission: "billing.view",
+    writePermission: "billing.writeoff.request",
+    columns: [
+      { key: "reference_code", label: "Ref #" },
+      { key: "invoice_id", label: "Invoice ID" },
+      { key: "amount", label: "Amount" },
+      { key: "status", label: "Status" },
+      { key: "reason", label: "Reason" },
+      { key: "created_at", label: "Date" },
+    ],
+    fields: [
+      { name: "invoice_id", label: "Invoice ID", type: "text", required: true },
+      { name: "amount", label: "Amount (KES)", type: "number", required: true },
+      { name: "reason", label: "Reason for Write-Off", type: "textarea", required: true },
+    ],
+    statusOptions: ["DRAFT", "APPROVED", "REJECTED"],
+    actions: [
+      {
+        label: "Approve Write-Off",
+        permission: "billing.writeoff.approve",
+        path: (record) => `/billing/writeoffs/${record.id}/approve`,
+        fields: [
+          { name: "approval_notes", label: "Approval Notes", type: "textarea" },
+        ],
+        visible: (record) => record.status === "DRAFT",
+      },
+      {
+        label: "Reject Write-Off",
+        permission: "billing.writeoff.approve",
+        path: (record) => `/billing/writeoffs/${record.id}/reject`,
+        fields: [
+          { name: "approval_notes", label: "Rejection Reason", type: "textarea", required: true },
+        ],
+        visible: (record) => record.status === "DRAFT",
+      },
+    ],
+  },
 ];

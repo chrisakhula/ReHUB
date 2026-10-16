@@ -86,8 +86,7 @@ PAYMENT_ACCOUNT_BY_METHOD = {
 }
 
 
-def money(value) -> Decimal:
-    return Decimal(str(value or "0")).quantize(Decimal("0.01"))
+from app.core.money import money
 
 
 def normal_balance_for(account_type: str) -> str:
@@ -99,7 +98,7 @@ class FinanceLedgerService:
         self.db = db
         self.request = request
         self.actor = actor
-        self.facility_id = actor.facility_id
+        self.facility_id = getattr(actor, "facility_id", None)
 
     def event(self, action: str, entity, new: dict | None = None, reason: str = ""):
         if self.request is None:
@@ -524,15 +523,41 @@ class FinanceLedgerService:
                 403,
                 "Segregation of duties violation: Creators cannot approve their own expense vouchers.",
             )
-        senior_threshold = getattr(get_settings(), "SENIOR_EXPENSE_THRESHOLD_KES", Decimal("50000.00"))
+
+        # P0-2: Verify financial approval authority and enforce technical authority separation
+        user_roles = {r.name for r in getattr(self.actor, "roles", [])}
+        user_perms = {p.code for p in getattr(self.actor, "permissions", [])}
+        for r in getattr(self.actor, "roles", []):
+            user_perms.update({p.code for p in getattr(r, "permissions", [])})
+
+        if ("System Administrator" in user_roles or "Super Administrator" in user_roles) and not (
+            "Finance Manager" in user_roles or "Senior Finance Officer" in user_roles or "Facility Administrator" in user_roles
+        ):
+            raise HTTPException(
+                403,
+                "Technical Administrator roles are prohibited from financial approval duties. Explicit finance role assignment required.",
+            )
+
+        if (
+            "finance.approve" not in user_perms
+            and "finance.configure" not in user_perms
+            and not ("Finance Manager" in user_roles or "Facility Administrator" in user_roles)
+        ):
+            raise HTTPException(
+                403,
+                "Actor lacks financial approval authority ('finance.approve').",
+            )
+
+        senior_threshold = getattr(get_settings(), "finance_expense_senior_approval_threshold", Decimal("50000.00"))
         if voucher.amount > senior_threshold:
             user_perms = {p.code for p in getattr(self.actor, "permissions", [])}
             user_roles = {r.name for r in getattr(self.actor, "roles", [])}
             is_senior = (
                 "finance.configure" in user_perms
+                or "Finance Manager" in user_roles
                 or "Senior Finance Officer" in user_roles
+                or "Facility Administrator" in user_roles
                 or "Medical Director" in user_roles
-                or "System Administrator" in user_roles
             )
             if not is_senior:
                 raise HTTPException(
@@ -729,47 +754,128 @@ class FinanceLedgerService:
         self, data: CashReconciliationIn
     ) -> FinanceCashReconciliation:
         variance = money(data.counted_cash - data.expected_cash)
+        ref_code = generate_reference_code(self.db, self.facility_id, "CASH_RECONCILIATION")
+        is_balanced = (variance == Decimal("0.00"))
         recon = FinanceCashReconciliation(
             facility_id=self.facility_id,
+            reference_code=ref_code,
             period_date=data.period_date,
             cashier_name=data.cashier_name,
+            cashier_id=self.actor.id,
             opening_cash=money(data.opening_cash),
             expected_cash=money(data.expected_cash),
             counted_cash=money(data.counted_cash),
             variance=variance,
-            reviewed_by=self.actor.id,
+            variance_type="BALANCED" if is_balanced else ("SHORTAGE" if variance < 0 else "OVERAGE"),
+            status="BALANCED" if is_balanced else "VARIANCE_REVIEW",
+            reviewed_by=self.actor.id if is_balanced else None,
+            reviewed_at=utcnow() if is_balanced else None,
+            review_notes="Count balanced perfectly" if is_balanced else "",
             notes=data.notes,
             created_by=self.actor.id,
             updated_by=self.actor.id,
         )
         self.db.add(recon)
         self.db.flush()
-        if variance < 0:
-            self.post_journal(
-                entry_date=data.period_date,
-                reference=f"CASH-{str(recon.id)[:8]}",
-                description="Cash reconciliation shortage",
+        self.event("finance.cash_reconciliation_created", recon)
+        # Note: If non-zero variance, supervisor approval is required before GL posting
+        return recon
+
+    def approve_cash_variance(
+        self, reconciliation_id: UUID, notes: str = ""
+    ) -> FinanceCashReconciliation:
+        recon = self.db.get(FinanceCashReconciliation, reconciliation_id)
+        if not recon or recon.facility_id != self.facility_id:
+            raise HTTPException(404, "Cash reconciliation not found")
+        if recon.status != "VARIANCE_REVIEW":
+            raise HTTPException(400, f"Cannot approve cash reconciliation in '{recon.status}' status. Only 'VARIANCE_REVIEW' records can be approved.")
+
+        # Segregation of duties: cashier / creator cannot approve own cash variance
+        if recon.cashier_id == self.actor.id or recon.created_by == self.actor.id:
+            raise HTTPException(
+                403,
+                "Segregation of duties violation: Cashiers cannot approve their own cash count variances.",
+            )
+
+        # Senior approval threshold for significant variances
+        manager_threshold = getattr(get_settings(), "cash_variance_manager_threshold", Decimal("5000.00"))
+        if abs(recon.variance) >= manager_threshold:
+            user_roles = {r.name for r in getattr(self.actor, "roles", [])}
+            user_perms = {p.code for p in getattr(self.actor, "permissions", [])}
+            is_senior = (
+                "Finance Manager" in user_roles
+                or "Facility Administrator" in user_roles
+                or "finance.configure" in user_perms
+            )
+            if not is_senior:
+                raise HTTPException(
+                    403,
+                    f"Cash variances exceeding KSh {manager_threshold:,.2f} require Finance Manager or Facility Administrator approval.",
+                )
+
+        # Atomic GL posting
+        if recon.variance < 0:
+            entry = self.post_journal(
+                entry_date=recon.period_date,
+                reference=recon.reference_code or f"CRN-{str(recon.id)[:8]}",
+                description=f"Approved cash shortage: {notes or recon.notes or 'Reconciliation discrepancy'}",
                 source_module="CASH_RECONCILIATION",
                 source_id=str(recon.id),
                 posting_type="CASH_SHORTAGE",
                 lines=[
-                    {"account_code": "6600", "debit": abs(variance), "credit": 0},
-                    {"account_code": "1000", "debit": 0, "credit": abs(variance)},
+                    {"account_code": "6600", "debit": abs(recon.variance), "credit": 0},
+                    {"account_code": "1000", "debit": 0, "credit": abs(recon.variance)},
                 ],
             )
-        elif variance > 0:
-            self.post_journal(
-                entry_date=data.period_date,
-                reference=f"CASH-{str(recon.id)[:8]}",
-                description="Cash reconciliation overage",
+            recon.journal_id = entry.id
+        elif recon.variance > 0:
+            entry = self.post_journal(
+                entry_date=recon.period_date,
+                reference=recon.reference_code or f"CRN-{str(recon.id)[:8]}",
+                description=f"Approved cash overage: {notes or recon.notes or 'Reconciliation discrepancy'}",
                 source_module="CASH_RECONCILIATION",
                 source_id=str(recon.id),
                 posting_type="CASH_OVERAGE",
                 lines=[
-                    {"account_code": "1000", "debit": variance, "credit": 0},
-                    {"account_code": "4300", "debit": 0, "credit": variance},
+                    {"account_code": "1000", "debit": recon.variance, "credit": 0},
+                    {"account_code": "4300", "debit": 0, "credit": recon.variance},
                 ],
             )
+            recon.journal_id = entry.id
+
+        recon.status = "POSTED"
+        recon.approved_by = self.actor.id
+        recon.approved_at = utcnow()
+        recon.reviewed_by = self.actor.id
+        recon.reviewed_at = utcnow()
+        recon.review_notes = notes
+        recon.updated_by = self.actor.id
+        self.db.flush()
+        self.event("finance.cash_variance_approved", recon)
+        return recon
+
+    def reject_cash_variance(
+        self, reconciliation_id: UUID, notes: str = ""
+    ) -> FinanceCashReconciliation:
+        recon = self.db.get(FinanceCashReconciliation, reconciliation_id)
+        if not recon or recon.facility_id != self.facility_id:
+            raise HTTPException(404, "Cash reconciliation not found")
+        if recon.status != "VARIANCE_REVIEW":
+            raise HTTPException(400, f"Cannot reject cash reconciliation in '{recon.status}' status. Only 'VARIANCE_REVIEW' records can be rejected.")
+
+        if recon.cashier_id == self.actor.id or recon.created_by == self.actor.id:
+            raise HTTPException(
+                403,
+                "Segregation of duties violation: Cashiers cannot reject their own cash count variances.",
+            )
+
+        recon.status = "REJECTED"
+        recon.reviewed_by = self.actor.id
+        recon.reviewed_at = utcnow()
+        recon.review_notes = notes
+        recon.updated_by = self.actor.id
+        self.db.flush()
+        self.event("finance.cash_variance_rejected", recon)
         return recon
 
     def create_payment_reconciliation(

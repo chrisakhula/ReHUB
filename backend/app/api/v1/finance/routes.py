@@ -25,6 +25,7 @@ from app.models.finance import (
 from app.schemas.finance import (
     AccountIn,
     CashReconciliationIn,
+    CashReconciliationApproveIn,
     ExpenseCategoryIn,
     ExpenseVoucherIn,
     FiscalPeriodIn,
@@ -506,12 +507,16 @@ def cash_reconciliations(
         page_size,
         lambda row: {
             "id": str(row.id),
+            "reference_code": row.reference_code,
             "period_date": iso(row.period_date),
             "cashier_name": row.cashier_name,
-            "expected_cash": float(row.expected_cash),
-            "counted_cash": float(row.counted_cash),
-            "variance": float(row.variance),
+            "expected_cash": str(row.expected_cash),
+            "counted_cash": str(row.counted_cash),
+            "variance": str(row.variance),
+            "variance_type": row.variance_type,
             "status": row.status,
+            "approved_by": str(row.approved_by) if row.approved_by else None,
+            "review_notes": row.review_notes,
         },
     )
 
@@ -524,7 +529,55 @@ def create_cash_reconciliation(
     actor=Depends(require_permission("finance.edit")),
 ):
     row = service(db, request, actor).create_cash_reconciliation(data)
-    return {"id": str(row.id), "variance": float(row.variance), "status": row.status}
+    db.commit()
+    db.refresh(row)
+    return {
+        "id": str(row.id),
+        "reference_code": row.reference_code,
+        "variance": str(row.variance),
+        "variance_type": row.variance_type,
+        "status": row.status,
+    }
+
+
+@router.post("/cash-reconciliations/{id}/approve")
+def approve_cash_variance(
+    id: UUID,
+    request: Request,
+    payload: CashReconciliationApproveIn = CashReconciliationApproveIn(),
+    db: Session = Depends(get_db),
+    actor=Depends(require_permission("finance.approve")),
+):
+    row = service(db, request, actor).approve_cash_variance(id, payload.review_notes)
+    db.commit()
+    db.refresh(row)
+    return {
+        "id": str(row.id),
+        "reference_code": row.reference_code,
+        "variance": str(row.variance),
+        "status": row.status,
+        "approved_by": str(row.approved_by) if row.approved_by else None,
+        "approved_at": row.approved_at.isoformat() if row.approved_at else None,
+    }
+
+
+@router.post("/cash-reconciliations/{id}/reject")
+def reject_cash_variance(
+    id: UUID,
+    request: Request,
+    payload: CashReconciliationApproveIn = CashReconciliationApproveIn(),
+    db: Session = Depends(get_db),
+    actor=Depends(require_permission("finance.approve")),
+):
+    row = service(db, request, actor).reject_cash_variance(id, payload.review_notes)
+    db.commit()
+    db.refresh(row)
+    return {
+        "id": str(row.id),
+        "reference_code": row.reference_code,
+        "status": row.status,
+        "review_notes": row.review_notes,
+    }
 
 
 @router.get("/payment-reconciliations")
@@ -618,3 +671,15 @@ def balance_sheet(
     actor=Depends(require_permission("finance.reports")),
 ):
     return service(db, request, actor).balance_sheet(as_of)
+
+
+@router.get("/integrity/billing-gl")
+def billing_gl_integrity(
+    db: Session = Depends(get_db),
+    actor=Depends(require_permission("finance.audit")),
+):
+    """Run non-destructive diagnostic scan comparing Billing Invoices, Payments, Write-Offs, and Credit Notes against General Ledger journal postings."""
+    from app.services.integrity import BillingGlIntegrityService
+    scanner = BillingGlIntegrityService(db, actor.facility_id)
+    return scanner.scan_all()
+

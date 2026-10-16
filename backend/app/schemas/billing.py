@@ -51,16 +51,16 @@ class InvoiceItemIn(RecordBase):
     service_id: UUID | None = None
     package_id: UUID | None = None
     description: str = Field(..., max_length=255)
-    quantity: float = Field(1, ge=0)
-    unit_price: float = Field(..., ge=0)
-    discount: float = Field(0, ge=0)
-    tax_rate: float = Field(0, ge=0)
+    quantity: Decimal = Field(Decimal("1.00"), ge=0)
+    unit_price: Decimal = Field(..., ge=0)
+    discount: Decimal = Field(Decimal("0.00"), ge=0)
+    tax_rate: Decimal = Field(Decimal("0.00"), ge=0)
 
 
 class InvoiceItemOut(InvoiceItemIn):
     id: UUID
     invoice_id: UUID
-    total_price: float
+    total_price: Decimal
     created_at: datetime
     updated_at: datetime
 
@@ -80,10 +80,10 @@ class InvoiceIn(RecordBase):
 class InvoiceOut(InvoiceIn):
     id: UUID
     facility_id: UUID
-    subtotal: float
-    tax_amount: float
-    discount_amount: float
-    total_amount: float
+    subtotal: Decimal
+    tax_amount: Decimal
+    discount_amount: Decimal
+    total_amount: Decimal
     created_at: datetime
     updated_at: datetime
     items: list[InvoiceItemOut] = []
@@ -92,7 +92,7 @@ class InvoiceOut(InvoiceIn):
 class PaymentIn(RecordBase):
     payer_id: UUID | None = None
     client_id: UUID | None = None
-    amount: float = Field(..., gt=0)
+    amount: Decimal = Field(..., gt=0)
     payment_method: str = Field(..., max_length=50)
     transaction_reference: str = Field(..., max_length=100)
     payment_date: datetime
@@ -109,7 +109,7 @@ class PaymentOut(PaymentIn):
 
 class PaymentAllocationIn(RecordBase):
     invoice_id: UUID
-    amount: float = Field(..., gt=0)
+    amount: Decimal = Field(..., gt=0)
 
 
 class PaymentAllocationOut(PaymentAllocationIn):
@@ -165,3 +165,95 @@ class MpesaTransactionOut(RecordBase):
     reconciled_at: Optional[datetime] = None
     reconciliation_notes: Optional[str] = None
 
+
+# --- Phase 26.5: Credit Notes ---
+
+class CreditNoteIn(RecordBase):
+    invoice_id: UUID
+    amount: Decimal = Field(..., gt=0)
+    reason_code: str = Field("OTHER", max_length=50)
+    reason: str = Field(..., min_length=3, max_length=1000)
+
+
+class CreditNoteApproveIn(RecordBase):
+    approval_notes: str = Field("", max_length=1000)
+
+
+class CreditNoteOut(RecordBase):
+    id: UUID
+    facility_id: UUID
+    invoice_id: UUID
+    credit_number: str
+    amount: Decimal
+    reason_code: str
+    reason: str
+    status: str
+    issued_at: datetime
+    issued_by: UUID
+    requested_by: UUID | None = None
+    requested_at: datetime | None = None
+    approved_by: UUID | None = None
+    approved_at: datetime | None = None
+    approval_notes: str = ""
+    journal_id: UUID | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- Phase 26.5: Write-Offs ---
+
+class WriteOffIn(RecordBase):
+    invoice_id: UUID
+    amount: Decimal = Field(..., gt=0)
+    reason: str = Field(..., min_length=3, max_length=1000)
+
+
+class WriteOffApproveIn(RecordBase):
+    approval_notes: str = Field("", max_length=1000)
+
+
+class WriteOffOut(RecordBase):
+    id: UUID
+    facility_id: UUID
+    invoice_id: UUID
+    reference_code: str | None = None
+    amount: Decimal
+    reason: str
+    status: str
+    requested_by: UUID | None = None
+    requested_at: datetime | None = None
+    approved_by: UUID | None = None
+    approved_at: datetime | None = None
+    written_off_at: datetime | None = None
+    approval_notes: str = ""
+    journal_id: UUID | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- Phase 26.5: Integrity Checker ---
+
+class IntegrityRecord(BaseModel):
+    entity_type: str
+    reference: str
+    source_id: str
+    billing_amount: Decimal
+    gl_amount: Decimal
+    difference: Decimal
+    status: str  # MATCHED, MISMATCH, MISSING_JOURNAL, DUPLICATE_JOURNAL
+    details: str = ""
+
+
+class BillingGlIntegrityReport(BaseModel):
+    facility_id: UUID
+    scanned_at: datetime
+    invoices_checked: int
+    payments_checked: int
+    writeoffs_checked: int
+    credit_notes_checked: int
+    total_records: int
+    matched: int
+    mismatches: int
+    missing_journals: int
+    duplicate_journals: int
+    records: list[IntegrityRecord]

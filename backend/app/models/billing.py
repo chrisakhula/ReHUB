@@ -8,7 +8,6 @@ from sqlalchemy import (
     Boolean,
     Date,
     DateTime,
-    Float,
     ForeignKey,
     Integer,
     Numeric,
@@ -46,7 +45,7 @@ class PriceList(Record, Base):
     service_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_services.id"), nullable=True)
     package_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_programme_packages.id"), nullable=True)
     payer_category: Mapped[str] = mapped_column(String(50), default="DEFAULT") # e.g. INSURANCE, PRIVATE
-    amount: Mapped[float] = mapped_column(Numeric(10, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     effective_from: Mapped[date] = mapped_column(Date)
     effective_to: Mapped[date | None] = mapped_column(Date, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -83,11 +82,11 @@ class Invoice(Record, Base):
     invoice_number: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     issue_date: Mapped[date] = mapped_column(Date)
     due_date: Mapped[date] = mapped_column(Date)
-    status: Mapped[str] = mapped_column(String(30), default="DRAFT") # DRAFT, ISSUED, PARTIAL, PAID, CANCELLED
-    subtotal: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    tax_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    discount_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    total_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
+    status: Mapped[str] = mapped_column(String(30), default="DRAFT") # DRAFT, ISSUED, PARTIAL, PAID, CANCELLED, WRITTEN_OFF
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    discount_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
     notes: Mapped[str] = mapped_column(Text, default="")
 
 
@@ -97,11 +96,11 @@ class InvoiceItem(Record, Base):
     service_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_services.id"))
     package_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_programme_packages.id"))
     description: Mapped[str] = mapped_column(String(255))
-    quantity: Mapped[float] = mapped_column(Numeric(10, 2), default=1)
-    unit_price: Mapped[float] = mapped_column(Numeric(12, 2))
-    discount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    tax_rate: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
-    total_price: Mapped[float] = mapped_column(Numeric(12, 2))
+    quantity: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("1.00"))
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    discount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    tax_rate: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=Decimal("0.00"))
+    total_price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
 
 
 class Payment(Record, Base):
@@ -109,7 +108,7 @@ class Payment(Record, Base):
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     payer_id: Mapped[UUID | None] = mapped_column(ForeignKey("billing_payers.id"), index=True)
     client_id: Mapped[UUID | None] = mapped_column(ForeignKey("clients.id"), index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     payment_method: Mapped[str] = mapped_column(String(50)) # CASH, MPESA, CARD, TRANSFER
     transaction_reference: Mapped[str] = mapped_column(String(100), index=True)
     payment_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -121,7 +120,7 @@ class PaymentAllocation(Record, Base):
     __tablename__ = "billing_payment_allocations"
     payment_id: Mapped[UUID] = mapped_column(ForeignKey("billing_payments.id"), index=True)
     invoice_id: Mapped[UUID] = mapped_column(ForeignKey("billing_invoices.id"), index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     allocated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     allocated_by: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
 
@@ -140,18 +139,25 @@ class CreditNote(Record, Base):
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     invoice_id: Mapped[UUID] = mapped_column(ForeignKey("billing_invoices.id"), index=True)
     credit_number: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    reason_code: Mapped[str] = mapped_column(String(50), default="OTHER") # BILLING_ERROR, DUPLICATE_CHARGE, SERVICE_NOT_DELIVERED, APPROVED_DISCOUNT, EARLY_DISCHARGE_ADJUSTMENT, OTHER
     reason: Mapped[str] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(30), default="ISSUED") # ISSUED, APPLIED, CANCELLED
+    status: Mapped[str] = mapped_column(String(30), default="PENDING_APPROVAL", index=True) # DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, POSTED, CANCELLED
     issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     issued_by: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    requested_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approval_notes: Mapped[str] = mapped_column(Text, default="")
+    journal_id: Mapped[UUID | None] = mapped_column(ForeignKey("finance_journal_entries.id"), nullable=True)
 
 
 class Refund(Record, Base):
     __tablename__ = "billing_refunds"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     payment_id: Mapped[UUID] = mapped_column(ForeignKey("billing_payments.id"), index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     reason: Mapped[str] = mapped_column(Text)
     refund_method: Mapped[str] = mapped_column(String(50))
     transaction_reference: Mapped[str] = mapped_column(String(100), default="")
@@ -163,17 +169,24 @@ class WriteOff(Record, Base):
     __tablename__ = "billing_write_offs"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     invoice_id: Mapped[UUID] = mapped_column(ForeignKey("billing_invoices.id"), index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    reference_code: Mapped[str | None] = mapped_column(String(50), unique=True, index=True, nullable=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     reason: Mapped[str] = mapped_column(Text)
-    approved_by: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
-    written_off_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(30), default="PENDING_APPROVAL", index=True) # PENDING_APPROVAL, APPROVED, REJECTED, POSTED
+    requested_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    written_off_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approval_notes: Mapped[str] = mapped_column(Text, default="")
+    journal_id: Mapped[UUID | None] = mapped_column(ForeignKey("finance_journal_entries.id"), nullable=True)
 
 
 class Adjustment(Record, Base):
     __tablename__ = "billing_adjustments"
     facility_id: Mapped[UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
     invoice_id: Mapped[UUID] = mapped_column(ForeignKey("billing_invoices.id"), index=True)
-    amount: Mapped[float] = mapped_column(Numeric(12, 2)) # Can be positive or negative
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2)) # Can be positive or negative
     reason: Mapped[str] = mapped_column(Text)
     adjustment_type: Mapped[str] = mapped_column(String(50)) # DISCOUNT, PENALTY, CORRECTION
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
